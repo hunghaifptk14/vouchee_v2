@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "815714525839",
+    "project_id": "vouchee-504da",
+    "storage_bucket": "vouchee-504da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:815714525839:android:155acc56b447e1acef86fa",
+        "android_client_info": {
+          "package_name": "com.example.vouchee"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "815714525839-67ofjnorb7ddhhp56c060bqpbc9vdrug.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.vouchee",
+            "certificate_hash": "93cc21f8cbc88cb2149b3195bc7734fe77b591c4"
+          }
+        },
+        {
+          "client_id": "815714525839-0odbaro0jerenro55d3onqef9icsjeo3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmwki-hDhBWPEJlzb-6Hd59gyx7vX7Hu0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "815714525839-0odbaro0jerenro55d3onqef9icsjeo3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
