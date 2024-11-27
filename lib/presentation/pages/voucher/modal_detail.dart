@@ -1,9 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vouchee/core/configs/assets/app_vector.dart';
 
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/modal.dart';
 import 'package:vouchee/networking/api_request.dart';
+import 'package:vouchee/presentation/pages/cart/cart_list.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class ModalsDetailPage extends StatefulWidget {
   // final Voucher voucher;
@@ -19,9 +23,9 @@ class ModalsDetailPage extends StatefulWidget {
 }
 
 class _ModalsDetailPageState extends State<ModalsDetailPage> {
-  final AddItemToCart cartService = AddItemToCart();
+  final ApiServices cartService = ApiServices();
   late Future<List<Modal>> futureModal;
-  final GetAllModals apiService = GetAllModals();
+  final ApiServices apiService = ApiServices();
 
   @override
   void initState() {
@@ -29,32 +33,12 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
     futureModal = apiService.fetchModal(); // Fetch data on init
   }
 
-  int quantity = 1;
-  // List<CartItem> cart = [];
-  void incrementCount() {
-    setState(() {
-      quantity++;
-    });
-  }
-
-  void decrementCount() {
-    if (quantity > 1) {
-      setState(() {
-        quantity--; // Decrement Voucher count
-      });
-    }
-  }
-
   Future<void> _addToCart(String modalId) async {
     bool success = await cartService.addToCart(modalId);
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Added to cart successfully!')),
-      );
+      TopSnackbar.show(context, 'Đã thêm sản phẩm vào giỏ hàng');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add to cart')),
-      );
+      TopSnackbar.show(context, 'Không thêm được sản phẩm');
     }
   }
 
@@ -62,21 +46,43 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
           title: Text('modals detail'),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => const CartPage()));
+              },
+              icon: SvgPicture.asset(
+                AppVector.cartIcon,
+                height: 22,
+                fit: BoxFit.cover,
+                colorFilter:
+                    const ColorFilter.mode(AppColor.black, BlendMode.srcIn),
+              ),
+              iconSize: 22,
+            )
+          ],
         ),
         body: SingleChildScrollView(
           child: Column(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: widget.modal.image.isNotEmpty
-                    ? Image.network(
-                        widget.modal.image,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 140,
-                      )
-                    : Placeholder(fallbackHeight: 250, fallbackWidth: 100),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: widget.modal.image.isNotEmpty
+                      ? Image.network(
+                          widget.modal.image,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 250,
+                        )
+                      : Placeholder(fallbackHeight: 250, fallbackWidth: 100),
+                ),
               ),
               const SizedBox(
                 height: 8,
@@ -174,7 +180,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                                 child: Text(
                                   'Thêm vào giỏ',
                                   style: TextStyle(
-                                      color: AppColor.secondary, fontSize: 12),
+                                      color: AppColor.secondary, fontSize: 14),
                                 ),
                               )),
                           ElevatedButton(

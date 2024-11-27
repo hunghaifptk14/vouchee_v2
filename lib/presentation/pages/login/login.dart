@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vouchee/core/configs/assets/app_image.dart';
+import 'package:vouchee/core/configs/assets/app_vector.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
 import 'package:vouchee/presentation/pages/login/google_service.dart';
-import 'package:vouchee/presentation/widgets/buttons/basic_button.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 import '../../../../core/configs/theme/app_color.dart';
 
@@ -15,6 +18,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GoogleSignInService _authService = GoogleSignInService();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,39 +26,20 @@ class _LoginPageState extends State<LoginPage> {
       //   topTitle: SvgPicture.asset(AppVector.logo),
       // ),
       body: Padding(
-        padding: const EdgeInsets.all(30),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           // crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _loginText(),
-            const SizedBox(
-              height: 40,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 60.0),
+              child: SizedBox(
+                  height: 200, child: SvgPicture.asset(AppVector.logo)),
             ),
-            _inputLogin(context),
-            const SizedBox(
-              height: 20,
-            ),
-            _inputPassword(context),
-            const SizedBox(
-              height: 30,
-            ),
-            BasicButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (BuildContext context) => HomePage()));
-                },
-                backgroundColor: AppColor.primary,
-                textColor: AppColor.white,
-                title: 'Đăng nhập'),
-            const SizedBox(
-              height: 20,
-            ),
-            _otherText(),
-            const SizedBox(
-              height: 20,
+            Container(
+              height: 250,
+              decoration: const BoxDecoration(
+                  image: DecorationImage(image: AssetImage(AppImage.man))),
             ),
             _loginWithGoogle(),
           ],
@@ -84,40 +69,61 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _otherText() {
-    return const Text(
-      'Hoặc',
-      style: TextStyle(
-          fontSize: 15, fontWeight: FontWeight.w300, color: AppColor.grey),
-    );
-  }
-
   Widget _loginWithGoogle() {
-    return ElevatedButton(
-      onPressed: () async {
-        // if (await confirm(
-        //   context,
-        //   title: const Text('Confirm'),
-        //   content: const Text('Would you like to remove?'),
-        //   textOK: const Text('Yes'),
-        //   textCancel: const Text('No'),
-        // )) {
-        //   return print('pressedOK');
-        // }
-        // return print('pressedCancel');
-        // User? user = await _authService.signInWithGoogle(googleAccessToken);
-        User? user = await _authService.signInWithGoogle();
+    bool isLoading = false;
 
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomePage(user: user),
-            ));
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return isLoading
+            ? CircularProgressIndicator()
+            : ElevatedButton(
+                onPressed: () async {
+                  setState(() {
+                    isLoading = true;
+                  });
+
+                  try {
+                    User? user = await _authService.signInWithGoogle();
+
+                    if (user != null && mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ),
+                      );
+                    } else if (mounted) {
+                      // Handle case where user is null
+                      TopSnackbar.show(
+                          context, 'Login thất bại, vui lòng thử lại');
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      TopSnackbar.show(
+                          context, 'Đã xải ra lỗi, vui lòng thử lại');
+                    }
+                  } finally {
+                    if (mounted) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                    }
+                  }
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: const Text(
+                        'Đăng nhập với Google',
+                        style: TextStyle(color: AppColor.white),
+                      ),
+                    ),
+                  ],
+                ),
+              );
       },
-      child: const Text(
-        'Sign in with Google',
-        style: TextStyle(color: AppColor.white),
-      ),
     );
   }
 }

@@ -1,18 +1,18 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+
 import 'package:vouchee/core/configs/assets/app_vector.dart';
 import 'package:vouchee/presentation/pages/category/category_list.dart';
 import 'package:vouchee/presentation/pages/voucher/voucher_list.dart';
-
+import 'package:vouchee/presentation/pages/wallet/wallet_bar.dart';
 import 'package:vouchee/presentation/widgets/bottomNav/bottom_app_bar.dart';
 
 class HomePage extends StatelessWidget {
-  final User? user;
+  // final User? user;
   const HomePage({
     super.key,
-    this.user,
+    // this.user,
   });
 
   @override
@@ -31,7 +31,7 @@ class HomePage extends StatelessWidget {
               child: SvgPicture.asset(AppVector.logo),
               // fit: BoxFit.cover,
             ),
-
+            WalletBar(),
             // Search Field
             // const Padding(
             //     padding: EdgeInsets.all(16), child: SearchBarCustom()),
@@ -44,31 +44,33 @@ class HomePage extends StatelessWidget {
               child: Text(
                 'Khám phá',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.only(top: 16, left: 16),
               child: CategoryList(),
             ),
-            const SizedBox(height: 8),
 
+            // const SizedBox(height: 16),
+            // Padding(
+            //     padding: const EdgeInsets.symmetric(horizontal: 16),
+            //     child: SlideShow()),
             const SizedBox(height: 16),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Giành cho bạn',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
             const SizedBox(height: 8),
-            // Fetch and Display Product Cards
-            // const SizedBox(width: 380, height: 600, child: VoucherPageTest())
+
             SizedBox(child: VoucherList()),
           ],
         ),

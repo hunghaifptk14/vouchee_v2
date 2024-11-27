@@ -1,15 +1,12 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/near_voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
-import 'package:vouchee/presentation/pages/suggestion/location_service.dart';
+import 'package:vouchee/presentation/pages/voucher/voucher_detail.dart';
 
 class SuggestionPage extends StatefulWidget {
-  const SuggestionPage({
-    super.key,
-  });
+  const SuggestionPage({super.key});
 
   @override
   State<SuggestionPage> createState() => _SuggestionPageState();
@@ -17,30 +14,87 @@ class SuggestionPage extends StatefulWidget {
 
 class _SuggestionPageState extends State<SuggestionPage> {
   late Future<List<NearVoucher>> futureNearVouchers;
-  final GetNearVoucher apiService = GetNearVoucher();
-  final LocationService locationService = LocationService();
+  final ApiServices apiService = ApiServices();
 
   @override
   void initState() {
     super.initState();
-    _fetchVouchersBasedOnLocation();
-    futureNearVouchers = Future.value([]);
+    futureNearVouchers = _fetchVouchersBasedOnLocation();
   }
 
-  void _fetchVouchersBasedOnLocation() async {
+  Future<Position?> getUserLocation(BuildContext context) async {
     try {
-      // Get user location
-      Position position = await locationService.getUserLocation();
+      // Check location permission
+      LocationPermission permission = await Geolocator.checkPermission();
 
-      // Fetch vouchers based on location
-      setState(() {
-        futureNearVouchers = apiService.fetchNearVouchers(
-          lat: position.latitude,
-          lon: position.longitude,
+      if (permission == LocationPermission.denied) {
+        // Request permission if not already granted
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception("Location permission denied.");
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        // Handle permanently denied permission
+        showPermissionDeniedDialog(context);
+        throw Exception("Location permission permanently denied.");
+      }
+
+      // Get and return the current position
+      return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+    } catch (e) {
+      print("Error getting location: $e");
+      return null; // Return null if location cannot be fetched
+    }
+  }
+
+  void showPermissionDeniedDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Cấp quyền vị trí'),
+          content: Text(
+              'Ứng dụng cần quyền truy cập vị trí để hiển thị các voucher gần bạn. Vui lòng bật quyền trong phần cài đặt.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Geolocator.openAppSettings();
+              },
+              child: Text('Đi đến cài đặt'),
+            ),
+          ],
         );
-      });
+      },
+    );
+  }
+
+  Future<List<NearVoucher>> _fetchVouchersBasedOnLocation() async {
+    try {
+      print("Fetching user location...");
+      Position? position = await getUserLocation(context);
+
+      if (position == null) {
+        throw Exception("Unable to get user location.");
+      }
+
+      print("Location fetched: (${position.latitude}, ${position.longitude})");
+
+      print("Fetching vouchers...");
+      return await apiService.fetchNearVouchers(
+        lat: position.latitude,
+        lon: position.longitude,
+      );
     } catch (e) {
       print("Error fetching vouchers: $e");
+      throw Exception('Không thể lấy thông tin voucher. Vui lòng thử lại.');
     }
   }
 
@@ -49,6 +103,7 @@ class _SuggestionPageState extends State<SuggestionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Voucher gần bạn'),
+        backgroundColor: Colors.transparent,
       ),
       body: FutureBuilder<List<NearVoucher>>(
         future: futureNearVouchers,
@@ -56,67 +111,143 @@ class _SuggestionPageState extends State<SuggestionPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Lỗi: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Lỗi: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.red),
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        futureNearVouchers = _fetchVouchersBasedOnLocation();
+                      });
+                    },
+                    child: Text('Thử lại'),
+                  ),
+                ],
+              ),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Không có voucher'));
+            return Center(child: Text('Không tìm thấy voucher gần bạn.'));
           }
 
+          List<NearVoucher> nearvoucher = snapshot.data!;
           return ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            itemCount: snapshot.data!.length,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: nearvoucher.length,
             itemBuilder: (context, index) {
-              NearVoucher nvoucher = snapshot.data![index];
-              print(nvoucher.addresses);
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: InkWell(
-                  child: Row(
+              NearVoucher nvoucher = nearvoucher[index];
+              return Card(
+                color: AppColor.white,
+                elevation: 4,
+                margin: EdgeInsets.symmetric(vertical: 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(7),
-                          child: Image.network(
-                            nvoucher.voucher.brandImage,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Icon(Icons.error),
-                          ),
+                      Text(
+                        nvoucher.voucher.brandName,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              nvoucher.voucher.brandName,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Text(
-                                  'Cách bạn: ',
-                                  style: TextStyle(
-                                    color: AppColor.grey,
-                                    fontSize: 12,
-                                  ),
+                      SizedBox(height: 8),
+                      // Filter and display addresses with distance <= 20
+                      Column(
+                        children: nvoucher.addresses
+                            .where((address) => address.distance <= 20)
+                            .map((address) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                color: AppColor.lightBlue,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.location_pin,
+                                          color: AppColor.secondary,
+                                          size: 18,
+                                        ),
+                                        Flexible(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                address.name,
+                                                style: TextStyle(
+                                                    overflow:
+                                                        TextOverflow.visible),
+                                              ),
+                                              SizedBox(
+                                                height: 4,
+                                              ),
+                                              Text(
+                                                'Khoảng cách: ${address.distance} km',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: AppColor.secondary),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                Text(nvoucher.addresses.distance.toString()),
-                                // Text('${nvoucher.addresses}'),
-                              ],
+                              ),
                             ),
-                          ],
-                        ),
+                          );
+                        }).toList(),
+                      ),
+                      SizedBox(height: 16),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => VoucherDetailPage(
+                                      voucher: nvoucher.voucher,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text('Xem chi tiết voucher',
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                  )),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  onTap: () {
-                    // Add your navigation code here
-                  },
                 ),
               );
             },
@@ -126,19 +257,3 @@ class _SuggestionPageState extends State<SuggestionPage> {
     );
   }
 }
-
-// Widget _countAddress() {
-//   final Voucher voucher;
-//   return ListView.builder(
-//     shrinkWrap: true,
-//     itemCount: voucher.addresses.length,
-//     itemBuilder: (context, index) {
-//       final address = voucher.addresses[index];
-//       return ListTile(
-//         leading: Icon(Icons.location_on),
-//         title: Text(address.name),
-//         subtitle: Text("${address.distance.toStringAsFixed(2)} m away"),
-//       );
-//     },
-//   );
-// }

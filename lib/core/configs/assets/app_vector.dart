@@ -21,4 +21,5 @@ class AppVector {
   static const String drinkIcon = '${basePath}Drink_icon$format';
   static const String entertaimentIcon = '${basePath}Entertainment_icon$format';
   static const String healthcareIcon = '${basePath}Healthcare_icon$format';
+  static const String trashBin = '${basePath}trash_bin$format';
 }

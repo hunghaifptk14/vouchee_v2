@@ -15,4 +15,5 @@ class AppImage {
   static const String voucher = '${basePath}voucher$format';
   static const String mortaboard = '${basePath}mortarboard$format';
   static const String health = '${basePath}health$format';
+  static const String trashCan = '${basePath}trash_can$format';
 }

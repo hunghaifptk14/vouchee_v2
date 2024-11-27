@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
@@ -15,13 +16,21 @@ class VoucherList extends StatefulWidget {
 
 class _VoucherListState extends State<VoucherList> {
   late Future<List<Voucher>> futureVouchers;
-  final GetAllVouchers apiService =
-      GetAllVouchers(); // Initialize the API service
+  final ApiServices apiService = ApiServices();
 
   @override
   void initState() {
     super.initState();
-    futureVouchers = apiService.fetchVouchers(); // Fetch data on init
+    futureVouchers = apiService.fetchVouchers();
+  }
+
+  String _currencyFormat(double amount) {
+    String format = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: '₫',
+      decimalDigits: 0, // No decimal digits
+    ).format(amount);
+    return format;
   }
 
   @override
@@ -61,23 +70,29 @@ class _VoucherListState extends State<VoucherList> {
                     ),
                   );
                 },
-                child: Card(
-                  elevation: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: AppColor.white,
+                  ),
                   child: Column(
                     children: [
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              voucher.brandImage,
-                              fit: BoxFit.cover,
+                            padding: const EdgeInsets.all(4.0),
+                            child: Container(
                               width: double.infinity,
                               height: 150,
-                            ),
-                          ),
-                        ),
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                image: DecorationImage(
+                                  image: NetworkImage(voucher.image),
+                                  fit: BoxFit
+                                      .cover, // Scale the image to fit the container
+                                ),
+                              ),
+                            )),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -98,7 +113,7 @@ class _VoucherListState extends State<VoucherList> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '${voucher.sellPrice} đ',
+                                  _currencyFormat(voucher.sellPrice),
                                   style: TextStyle(
                                       fontSize: 12, color: Colors.green),
                                 ),
@@ -110,7 +125,7 @@ class _VoucherListState extends State<VoucherList> {
                                       size: 17,
                                     ),
                                     Text(
-                                      '${voucher.rating}',
+                                      '${voucher.rating.toInt()}',
                                       style: const TextStyle(
                                         fontSize: 11,
                                         color: AppColor.black,

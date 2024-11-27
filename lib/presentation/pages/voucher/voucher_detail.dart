@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/voucher/modal_list.dart';
-import 'package:vouchee/presentation/widgets/buttons/cart_button.dart';
 
 class VoucherDetailPage extends StatefulWidget {
   final Voucher voucher;
@@ -15,13 +14,13 @@ class VoucherDetailPage extends StatefulWidget {
 }
 
 class _VoucherDetailPageState extends State<VoucherDetailPage> {
-  late Future<List<Voucher>> futureVoucher;
-  final GetAllVouchers apiService = GetAllVouchers();
+  late Future<Voucher> futureVoucher;
+  final ApiServices apiService = ApiServices();
 
   @override
   void initState() {
     super.initState();
-    futureVoucher = apiService.fetchVouchers(); // Fetch data on init
+    futureVoucher = apiService.fetchVoucherById(widget.voucher.id);
   }
 
   @override
@@ -32,19 +31,20 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
             widget.voucher.title,
             style: TextStyle(fontSize: 14),
           ),
-          actions: <Widget>[CartButton()],
+          backgroundColor: Colors.transparent,
         ),
         body: SingleChildScrollView(
           child: Column(
             children: [
               Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    widget.voucher.brandImage,
-                    height: 250,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                child: Container(
+                  height: 250,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    image: DecorationImage(
+                      image: NetworkImage(widget.voucher.brandImage),
+                      fit: BoxFit.cover, // Scale the image to fit the container
+                    ),
                   ),
                 ),
               ),
@@ -74,6 +74,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                         Text('${widget.voucher.rating}'),
                       ],
                     ),
+                    // HtmlElementView.fromTagName(tagName: 'p'),
                     SizedBox(height: 8),
 
                     // Supplier information
@@ -92,10 +93,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
 
                     // Display Addresses (if any)
 
-                    Container(
-                        child: ModalList(
-                      voucherId: widget.voucher.id,
-                    ))
+                    Container(child: ModalList(voucherId: widget.voucher.id))
                   ],
                 ),
               ),

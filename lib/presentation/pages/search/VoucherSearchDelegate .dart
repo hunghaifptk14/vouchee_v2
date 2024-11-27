@@ -45,7 +45,16 @@ class VoucherSearchDelegate extends SearchDelegate<Voucher> {
       itemBuilder: (context, index) {
         Voucher voucher = searchResults[index];
         return ListTile(
-          leading: Image.network(voucher.brandImage),
+          leading: Container(
+            width: double.infinity,
+            height: 150,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(voucher.brandImage),
+                fit: BoxFit.cover, // Scale the image to fit the container
+              ),
+            ),
+          ),
           title: Text(voucher.title),
           subtitle: Text(voucher.brandName),
           trailing: Text('Rating: ${voucher.rating}'),

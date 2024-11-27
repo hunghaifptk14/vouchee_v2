@@ -42,7 +42,7 @@ class Voucher {
     required this.brandImage,
     required this.categories,
     required this.address,
-    required this.modals, // Change 'modal' to 'modals'
+    required this.modals,
   });
 
   factory Voucher.fromJson(Map<String, dynamic> json) {

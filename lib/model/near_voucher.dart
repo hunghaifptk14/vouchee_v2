@@ -8,7 +8,7 @@ import 'package:vouchee/model/voucher.dart';
 class NearVoucher {
   final Voucher voucher;
   final Category categories;
-  final Address addresses;
+  final List<Address> addresses;
 
   NearVoucher({
     required this.voucher,
@@ -17,10 +17,12 @@ class NearVoucher {
   });
 
   factory NearVoucher.fromJson(Map<String, dynamic> json) {
+    var list = json['addresses'] as List;
+    List<Address> addressList = list.map((i) => Address.fromJson(i)).toList();
     return NearVoucher(
       voucher: Voucher.fromJson(json),
       categories: Category.fromJson(json),
-      addresses: Address.fromJson(json),
+      addresses: addressList,
     );
   }
 }

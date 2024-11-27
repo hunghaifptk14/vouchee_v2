@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vouchee/core/configs/assets/app_vector.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
@@ -15,13 +17,12 @@ class ModalList extends StatefulWidget {
 
 class _ModalListState extends State<ModalList> {
   late Future<Voucher> futureVoucher;
-  final GetVoucherById apiService = GetVoucherById();
+  final ApiServices apiService = ApiServices();
 
   @override
   void initState() {
     super.initState();
-    futureVoucher =
-        apiService.fetchVoucherById(widget.voucherId); // Fetch data on init
+    futureVoucher = apiService.fetchVoucherById(widget.voucherId);
   }
 
   @override
@@ -61,24 +62,28 @@ class _ModalListState extends State<ModalList> {
                     ),
                   );
                 },
-                child: Card(
-                  elevation: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: AppColor.white,
+                  ),
                   child: Column(
                     children: [
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: modal.image.isNotEmpty
-                                ? Image.network(
-                                    modal.image,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: 150,
-                                  )
-                                : Placeholder(
-                                    fallbackHeight: 100, fallbackWidth: 100),
+                          child: Container(
+                            width: double.infinity,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              image: DecorationImage(
+                                image: NetworkImage(modal.image),
+                                fit: BoxFit
+                                    .cover, // Scale the image to fit the container
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -101,19 +106,22 @@ class _ModalListState extends State<ModalList> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '${modal.sellPrice} đ',
+                                  '${modal.sellPrice.toInt()} đ',
                                   style: TextStyle(
-                                      fontSize: 12, color: Colors.green),
+                                      fontSize: 11, color: Colors.green),
                                 ),
                                 Row(
                                   children: [
-                                    Icon(
-                                      Icons.star,
-                                      color: Colors.yellow,
-                                      size: 17,
+                                    SvgPicture.asset(AppVector.promotionIcon,
+                                        height: 16,
+                                        fit: BoxFit.cover,
+                                        colorFilter: const ColorFilter.mode(
+                                            AppColor.black, BlendMode.srcIn)),
+                                    SizedBox(
+                                      width: 4,
                                     ),
                                     Text(
-                                      modal.stock.toString(),
+                                      modal.stock.toInt().toString(),
                                       style: const TextStyle(
                                         fontSize: 11,
                                         color: AppColor.black,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/category.dart';
 import 'package:vouchee/networking/api_request.dart';
+import 'package:vouchee/presentation/pages/category/category_detail.dart';
 
 class CategoryList extends StatefulWidget {
   const CategoryList({super.key});
@@ -18,7 +20,7 @@ class _CategoryListState extends State<CategoryList> {
   }
 
   late Future<List<Category>> futureCategory;
-  final GetAllCategory apiService = GetAllCategory();
+  final ApiServices apiService = ApiServices();
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,7 @@ class _CategoryListState extends State<CategoryList> {
         List<Category> categories = snapshot.data!;
 
         return SizedBox(
-          height: 170,
+          height: 90,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: categories.length,
@@ -45,39 +47,56 @@ class _CategoryListState extends State<CategoryList> {
 
               return InkWell(
                 onTap: () {
-                  // Handle onTap action
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CategoryDetail(
+                        category: category,
+                      ),
+                    ),
+                  );
                 },
-                child: Card(
-                  elevation: 4,
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: SvgPicture.network(
-                              category.image,
-                              fit: BoxFit.cover,
-                              height: 80,
-                              width: 80,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: AppColor.white,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(0.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: SvgPicture.network(
+                                category.image,
+                                fit: BoxFit.cover,
+                                height: 32,
+                                width: 32,
+                              ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Text(
-                            category.title,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              category.title,
+                              overflow: TextOverflow.clip,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
