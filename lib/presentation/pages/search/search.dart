@@ -1,116 +1,97 @@
-// import 'package:flutter/material.dart';
-// import 'package:vouchee/model/voucher.dart';
-// import 'package:vouchee/networking/api_request.dart';
-// import 'package:vouchee/presentation/pages/search/VoucherSearchDelegate%20.dart';
-// import 'package:vouchee/presentation/pages/voucher/detail.dart';
+import 'package:flutter/material.dart';
+import 'package:vouchee/model/voucher.dart';
+import 'package:vouchee/networking/api_request.dart'; // Assuming you have this file to fetch data
 
-// class HomePageSearchBar extends StatefulWidget {
-//   @override
-//   _HomePageSearchBarState createState() => _HomePageSearchBarState();
-// }
+class SearchBarWithClear extends StatefulWidget {
+  const SearchBarWithClear({super.key});
 
-// class _HomePageSearchBarState extends State<HomePageSearchBar> {
-//   late Future<List<Voucher>> futureVouchers;
-//   List<Voucher> allVouchers = []; // All vouchers from the API
-//   List<Voucher> filteredVouchers = []; // Vouchers to be displayed (filtered)
+  @override
+  _SearchBarWithClearState createState() => _SearchBarWithClearState();
+}
 
-//   final ApiService apiService = ApiService(); // Initialize the API service
-//   String searchQuery = ''; // Store the current search query
+class _SearchBarWithClearState extends State<SearchBarWithClear> {
+  final TextEditingController _controller = TextEditingController();
+  String searchQuery = '';
+  List<Voucher> allVouchers = []; // Assuming your Voucher class is available
+  List<Voucher> filteredVouchers = []; // The filtered list for display
+  final ApiServices apiService =
+      ApiServices(); // Assuming ApiServices handles fetching data
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     futureVouchers = apiService.fetchVouchers(); // Fetch data on init
-//     futureVouchers.then((vouchers) {
-//       setState(() {
-//         allVouchers = vouchers;
-//         filteredVouchers = vouchers; // Initially, display all vouchers
-//       });
-//     });
-//   }
+  @override
+  void initState() {
+    super.initState();
+    _fetchVouchers();
+  }
 
-//   // Function to filter vouchers based on search query
-//   void filterVouchers(String query) {
-//     setState(() {
-//       searchQuery = query;
-//       if (query.isEmpty) {
-//         // If search is empty, show all vouchers
-//         filteredVouchers = allVouchers;
-//       } else {
-//         // Filter vouchers based on title or brandName
-//         filteredVouchers = allVouchers.where((voucher) {
-//           return voucher.title.toLowerCase().contains(query.toLowerCase()) ||
-//               voucher.brandName.toLowerCase().contains(query.toLowerCase());
-//         }).toList();
-//       }
-//     });
-//   }
+  // Fetch vouchers from the API
+  Future<void> _fetchVouchers() async {
+    try {
+      final vouchers = await apiService.fetchVouchers(); // Fetch all vouchers
+      setState(() {
+        allVouchers = vouchers;
+        filteredVouchers = vouchers; // Initially, show all vouchers
+      });
+    } catch (e) {
+      print('Error fetching vouchers: $e');
+    }
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Vouchers'),
-//         // Add a search icon in the AppBar to show a search bar
-//         actions: [
-//           IconButton(
-//             icon: Icon(Icons.search),
-//             onPressed: () {
-//               showSearch(
-//                 context: context,
-//                 delegate: VoucherSearchDelegate(
-//                   allVouchers: allVouchers,
-//                   onVoucherSelected: (voucher) {
-//                     // Navigate to detail page on voucher selection
-//                     Navigator.push(
-//                       context,
-//                       MaterialPageRoute(
-//                         builder: (context) =>
-//                             VoucherDetailPage(voucher: voucher),
-//                       ),
-//                     );
-//                   },
-//                 ),
-//               );
-//             },
-//           ),
-//         ],
-//       ),
-//       body: FutureBuilder<List<Voucher>>(
-//         future: futureVouchers,
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             return Center(child: Text('Error: ${snapshot.error}'));
-//           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//             return Center(child: Text('No vouchers found'));
-//           }
+  // Function to filter vouchers based on the search query
+  void _search(String query) {
+    setState(() {
+      searchQuery = query;
+      if (query.isEmpty) {
+        filteredVouchers =
+            allVouchers; // Show all vouchers if the search query is empty
+      } else {
+        // Filter vouchers based on title or brand name
+        filteredVouchers = allVouchers.where((voucher) {
+          return voucher.title.toLowerCase().contains(query.toLowerCase()) ||
+              voucher.brandName.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
 
-//           // If data is successfully fetched
-//           return ListView.builder(
-//             itemCount: filteredVouchers.length,
-//             itemBuilder: (context, index) {
-//               Voucher voucher = filteredVouchers[index];
-//               return ListTile(
-//                 leading: Image.network(voucher.brandImage),
-//                 title: Text(voucher.title),
-//                 subtitle: Text(voucher.brandName),
-//                 trailing: Text('Rating: ${voucher.sellPrice}'),
-//                 onTap: () {
-//                   // Navigate to VoucherDetailPage on tap
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => VoucherDetailPage(voucher: voucher),
-//                     ),
-//                   );
-//                 },
-//               );
-//             },
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 25, left: 25, right: 25),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Flexible(
+                flex: 1,
+                child: TextField(
+                  cursorColor: Colors.grey,
+                  decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none),
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: 18),
+                      prefixIcon: Container(
+                        padding: EdgeInsets.all(15),
+                        width: 18,
+                        child: Image.asset('assets/icons/search.png'),
+                      )),
+                ),
+              ),
+              Container(
+                  margin: EdgeInsets.only(left: 10),
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(15)),
+                  width: 25,
+                  child: Image.asset('assets/icons/filter.png')),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}

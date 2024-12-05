@@ -40,6 +40,11 @@ class _CategoryDetailState extends State<CategoryDetail> {
     return format;
   }
 
+  double _percentDiscount(double sellPrice, double salePrice) {
+    double discount = (1 - (salePrice / sellPrice)) * 100;
+    return discount.roundToDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,7 +104,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
                                   child: Padding(
                                       padding: const EdgeInsets.all(4.0),
                                       child: Container(
-                                        width: double.infinity,
+                                        // width: double.infinity,
                                         height: 150,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.all(
@@ -138,22 +143,21 @@ class _CategoryDetailState extends State<CategoryDetail> {
                                                 fontSize: 12,
                                                 color: Colors.green),
                                           ),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.star,
-                                                color: Colors.yellow,
-                                                size: 17,
-                                              ),
-                                              Text(
-                                                '${voucher.rating.toInt()}',
-                                                style: const TextStyle(
-                                                  fontSize: 11,
-                                                  color: AppColor.black,
-                                                ),
-                                              ),
-                                            ],
-                                          )
+                                          voucher.salePrice != 0
+                                              ? Text(
+                                                  '-${_percentDiscount(voucher.sellPrice, voucher.salePrice).toInt().toString()}%',
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: AppColor.black,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  '',
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: AppColor.black,
+                                                  ),
+                                                )
                                         ],
                                       )
                                     ],

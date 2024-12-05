@@ -1,15 +1,15 @@
 import 'package:vouchee/model/modal.dart';
 
 class Checkout {
-  final double totalPrice;
-  final double shopDiscountPrice;
-  final double useVPoint;
-  final double useBalance;
-  final double finalPrice;
+  final int totalPrice;
+  final int shopDiscountPrice;
+  final int useVPoint;
+  final int useBalance;
+  final int finalPrice;
   final int vPointUp;
   final String giftEmail;
   final String buyerId;
-  final double balance;
+  final int balance;
   final int totalQuantity;
   final int vPoint;
   final List<Seller> sellers;

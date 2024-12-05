@@ -9,10 +9,10 @@ class PromotionList extends StatefulWidget {
   final String shopID;
   final Function(String, String, int) onPromotionSelected;
   const PromotionList({
-    Key? key,
+    super.key,
     required this.shopID,
     required this.onPromotionSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<PromotionList> createState() => _PromotionListState();

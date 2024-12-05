@@ -30,10 +30,12 @@ class _WalletPageState extends State<WalletPage> {
         children: [
           // Wallet Balance Card
           _buildWalletBalance(),
-
+          SizedBox(
+            height: 16,
+          ),
           // Transactions Header
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -45,6 +47,11 @@ class _WalletPageState extends State<WalletPage> {
                   ),
                 ),
                 TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   onPressed: () {
                     // Add functionality for "View All"
                   },
@@ -53,7 +60,10 @@ class _WalletPageState extends State<WalletPage> {
               ],
             ),
           ),
-
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(),
+          ),
           // Transaction List
           Expanded(
             child: _buildTransactionList(),
@@ -184,19 +194,19 @@ class _WalletPageState extends State<WalletPage> {
     final transactions = [
       {
         "title": "Starbucks Coffee",
-        "amount": "-\$12.50",
+        "amount": "-12.000 đ",
         "date": "Nov 18, 2024",
         "isExpense": true,
       },
       {
         "title": "Freelance Payment",
-        "amount": "+\$300.00",
+        "amount": "+300.000 đ",
         "date": "Nov 15, 2024",
         "isExpense": false,
       },
       {
         "title": "Amazon Purchase",
-        "amount": "-\$89.99",
+        "amount": "-40.000 đ",
         "date": "Nov 12, 2024",
         "isExpense": true,
       },
@@ -207,24 +217,24 @@ class _WalletPageState extends State<WalletPage> {
       itemBuilder: (context, index) {
         final transaction = transactions[index];
         return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: transaction['isExpense'] != null
-                ? Colors.redAccent
-                : Colors.green,
-            child: Icon(
-              transaction['isExpense'] != null
-                  ? Icons.arrow_downward
-                  : Icons.arrow_upward,
-              color: Colors.white,
-            ),
-          ),
+          // leading: CircleAvatar(
+          //   backgroundColor: transaction['isExpense'] == true
+          //       ? Colors.redAccent
+          //       : Colors.green,
+          //   child: Icon(
+          //     transaction['isExpense'] == true
+          //         ? Icons.arrow_downward
+          //         : Icons.arrow_upward,
+          //     color: Colors.white,
+          //   ),
+          // ),
           title: Text(transaction['title'] as String),
           subtitle: Text(transaction['date'] as String),
           trailing: Text(
             transaction['amount'] as String,
             style: TextStyle(
               color:
-                  transaction['isExpense'] != null ? Colors.red : Colors.green,
+                  transaction['isExpense'] == true ? Colors.red : Colors.green,
               fontWeight: FontWeight.bold,
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/wallet.dart';
 import 'package:vouchee/networking/api_request.dart';
@@ -12,7 +13,7 @@ class WalletBar extends StatefulWidget {
 }
 
 class _WalletBarState extends State<WalletBar> {
-  double? balance;
+  double balance = 0;
   bool isLoading = true;
   bool showBalance = true;
   final ApiServices getwallet = ApiServices();
@@ -25,12 +26,21 @@ class _WalletBarState extends State<WalletBar> {
 
   Future<void> fetchWalletData() async {
     Wallet? wallet = await getwallet.fetchWallet();
-    if (mounted) {
+    if (mounted || wallet == null) {
       setState(() {
         balance = wallet!.balance;
         isLoading = false;
       });
     }
+  }
+
+  String _currencyFormat(double amount) {
+    String format = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: '₫',
+      decimalDigits: 0, // No decimal digits
+    ).format(amount);
+    return format;
   }
 
   @override
@@ -45,10 +55,10 @@ class _WalletBarState extends State<WalletBar> {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(15),
             color: AppColor.white,
           ),
           child: Padding(
@@ -65,7 +75,7 @@ class _WalletBarState extends State<WalletBar> {
                           : balance != null
                               ? Text(
                                   showBalance
-                                      ? "${balance!.toInt()}"
+                                      ? _currencyFormat(balance)
                                       : "**********",
                                   style: TextStyle(
                                       fontSize: 11,

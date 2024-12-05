@@ -36,23 +36,24 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              Center(
-                child: Container(
-                  height: 250,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                    image: DecorationImage(
-                      image: NetworkImage(widget.voucher.brandImage),
-                      fit: BoxFit.cover, // Scale the image to fit the container
-                    ),
-                  ),
-                ),
-              ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      height: 250,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(15)),
+                        image: DecorationImage(
+                          image: NetworkImage(widget.voucher.brandImage),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
                     // Voucher title and brand
                     Text(
                       widget.voucher.title,
@@ -70,7 +71,11 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                     // Rating
                     Row(
                       children: [
-                        Icon(Icons.star, color: Colors.yellow),
+                        Icon(
+                          Icons.star,
+                          color: Colors.yellow,
+                          size: 14,
+                        ),
                         Text('${widget.voucher.rating}'),
                       ],
                     ),

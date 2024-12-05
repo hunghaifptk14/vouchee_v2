@@ -8,6 +8,7 @@ class AppTheme {
       brightness: Brightness.light,
       fontFamily: 'Inter',
       scaffoldBackgroundColor: const Color.fromARGB(255, 248, 248, 255),
+      // scaffoldBackgroundColor: Colors.white,
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.transparent,

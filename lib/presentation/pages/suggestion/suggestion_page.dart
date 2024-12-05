@@ -4,6 +4,7 @@ import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/near_voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/voucher/voucher_detail.dart';
+import 'package:vouchee/presentation/widgets/bottomNav/bottom_app_bar.dart';
 
 class SuggestionPage extends StatefulWidget {
   const SuggestionPage({super.key});
@@ -105,6 +106,7 @@ class _SuggestionPageState extends State<SuggestionPage> {
         title: Text('Voucher gần bạn'),
         backgroundColor: Colors.transparent,
       ),
+      bottomNavigationBar: BottomAppBarcustom(),
       body: FutureBuilder<List<NearVoucher>>(
         future: futureNearVouchers,
         builder: (context, snapshot) {

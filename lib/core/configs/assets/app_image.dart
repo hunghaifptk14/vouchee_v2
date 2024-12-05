@@ -16,4 +16,5 @@ class AppImage {
   static const String mortaboard = '${basePath}mortarboard$format';
   static const String health = '${basePath}health$format';
   static const String trashCan = '${basePath}trash_can$format';
+  static const String foodBanner = '${basePath}food_banner$format';
 }

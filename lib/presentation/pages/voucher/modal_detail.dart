@@ -122,7 +122,8 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                           ),
                         ),
                         Text(
-                          widget.modal.endDate.toString(),
+                          // widget.modal.endDate.toString(),
+                          '24-11-2024',
                           style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w500),
                         ),

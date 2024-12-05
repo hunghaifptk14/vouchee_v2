@@ -1,3 +1,5 @@
+import 'package:vouchee/model/order_detail.dart';
+
 class Order {
   final String id;
   final String? promotionId;
@@ -40,47 +42,6 @@ class Order {
       orderDetails: (json['orderDetails'] as List)
           .map((item) => OrderDetail.fromJson(item))
           .toList(),
-    );
-  }
-}
-
-class OrderDetail {
-  final String orderId;
-  final String modalId;
-  final double unitPrice;
-  final double? discountValue;
-  final double totalPrice;
-  final double discountPrice;
-  final double finalPrice;
-  final String status;
-  final List<String> voucherCodes;
-  final int quantity;
-
-  OrderDetail({
-    required this.orderId,
-    required this.modalId,
-    required this.unitPrice,
-    this.discountValue,
-    required this.totalPrice,
-    required this.discountPrice,
-    required this.finalPrice,
-    required this.status,
-    required this.voucherCodes,
-    required this.quantity,
-  });
-
-  factory OrderDetail.fromJson(Map<String, dynamic> json) {
-    return OrderDetail(
-      orderId: json['orderId'],
-      modalId: json['modalId'],
-      unitPrice: json['unitPrice'].toDouble(),
-      discountValue: json['discountValue'],
-      totalPrice: json['totalPrice'].toDouble(),
-      discountPrice: json['discountPrice'].toDouble(),
-      finalPrice: json['finalPrice'].toDouble(),
-      status: json['status'],
-      voucherCodes: List<String>.from(json['voucherCodes']),
-      quantity: json['quantity'],
     );
   }
 }

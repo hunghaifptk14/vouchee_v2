@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColor {
   static const white = Color.fromRGBO(255, 255, 255, 1);
+  static const theme = Color.fromARGB(255, 248, 248, 255);
   static const primary = Color.fromRGBO(51, 172, 199, 1);
   static const middleBue = Color.fromRGBO(132, 212, 230, 1);
   static const success = Color.fromRGBO(137, 230, 132, 1);

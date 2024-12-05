@@ -5,7 +5,9 @@ import 'package:http/http.dart' as http;
 import 'package:vouchee/model/cart.dart';
 import 'package:vouchee/model/category.dart';
 import 'package:vouchee/model/checkout.dart';
+import 'package:vouchee/model/item_brief.dart';
 import 'package:vouchee/model/modal.dart';
+import 'package:vouchee/model/my_voucher.dart';
 import 'package:vouchee/model/near_voucher.dart';
 import 'package:vouchee/model/order.dart';
 import 'package:vouchee/model/promotion.dart';
@@ -16,6 +18,7 @@ import 'package:vouchee/model/wallet.dart';
 // 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjZXJ0c2VyaWFsbnVtYmVyIjoiMTY5NjY3ZTItZTA4ZC00ODBlLWFiODAtZGMzYWYxNTdhYzk4IiwiZW1haWwiOiJuZ3V5ZW5odW5naGFpazE0QGdtYWlsLmNvbSIsImFjdG9ydCI6ImhhaSBuZ3V5ZW4iLCJyb2xlIjoiVVNFUiIsIm5iZiI6MTczMTg1NjA0NiwiZXhwIjoxNzQ5ODU2MDQ2LCJpYXQiOjE3MzE4NTYwNDZ9.w09IHK-EYF7Q-AL8RiyD6R2JlgbkyfNu-d9l4anz0P0';
 String? auth;
 String? orderID;
+String? userName;
 
 class ApiServices {
   Future<String?> postToken(String accessToken) async {
@@ -36,7 +39,7 @@ class ApiServices {
 
       if (response.statusCode == 200) {
         auth = json.decode(response.body)['accessToken'];
-        // print('auth: $auth');
+        userName = json.decode(response.body)['name'];
 
         return auth;
       } else {
@@ -47,6 +50,10 @@ class ApiServices {
       print('Error: $e');
       return null;
     }
+  }
+
+  String? getUserName() {
+    return userName;
   }
 
   Future<Voucher> fetchVoucherById(String voucherId) async {
@@ -68,8 +75,8 @@ class ApiServices {
     }
   }
 
-  final String apiUrl = 'https://api.vouchee.shop/api/v1/modal/get_modal/';
   Future<Modal> fetchModalById(String modalId) async {
+    final String apiUrl = 'https://api.vouchee.shop/api/v1/modal/get_modal/';
     try {
       final response = await http.get(Uri.parse('$apiUrl$modalId'));
       if (response.statusCode == 200) {
@@ -443,9 +450,8 @@ class ApiServices {
     }
   }
 
-  Future<List<Checkout>?> checkoutCart({
-    required List<String> modalId,
-    required String? promotionId,
+  Future<Checkout?> checkoutCart({
+    required List<ItemBrief> items,
     required int useVpoint,
     required int useBalance,
     required String giftEmail,
@@ -453,35 +459,38 @@ class ApiServices {
     final String apiUrl = 'https://api.vouchee.shop/api/v1/cart/checkout';
 
     try {
+      // Serialize ItemBrief list to JSON
+      final List<Map<String, dynamic>> itemBriefList =
+          items.map((item) => item.toJson()).toList();
+
       // Create the request body
       final body = jsonEncode({
-        "item_brief": [
-          {
-            "modalId": modalId,
-            "promotionId": promotionId,
-          }
-        ],
+        "item_brief": itemBriefList,
         "use_VPoint": useVpoint,
         "use_balance": useBalance,
-        "gift_email": giftEmail
+        "gift_email": giftEmail,
       });
 
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
-          "Content-Type": "application/json-patch+json",
-          "Authorization": 'Bearer $auth'
+          "Content-Type":
+              "application/json-patch+json", // Ensure correct content type
+          "Authorization": 'Bearer $auth', // Add your authorization token here
         },
         body: body,
       );
-      print('api: $modalId, $promotionId');
+
+      // Debugging: Print the request body and response body
 
       if (response.statusCode == 200) {
-        print("Checkout successful");
+        // Successful response
         final jsonData = json.decode(response.body);
-        print('Checkout ${jsonData}');
-        return jsonData.map((checkout) => Checkout.fromJson(checkout)).toList();
+        print('Response : $jsonData');
+
+        return Checkout.fromJson(jsonData);
       } else {
+        // Handle failure
         print("Failed to checkout: ${response.body}");
         return null;
       }
@@ -491,20 +500,68 @@ class ApiServices {
     }
   }
 
+  Future<List<Order>> fetchAllOrder() async {
+    final url =
+        Uri.parse('https://api.vouchee.shop/api/v1/order/get_all_order');
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $auth',
+      };
+
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        List<dynamic> results = jsonData['results'];
+        print(jsonData);
+        return results.map((order) => Order.fromJson(order)).toList();
+      } else {
+        throw Exception("Failed to fetch order data: ${response.reasonPhrase}");
+      }
+    } catch (e) {
+      throw Exception("Error fetching order data: $e");
+    }
+  }
+
+  Future<Order> fetchOrderID(String orderID) async {
+    final url =
+        Uri.parse('https://api.vouchee.shop/api/v1/order/get_order/$orderID');
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $auth',
+      };
+
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        // Decode the response body
+        final jsonData = json.decode(response.body);
+
+        return Order.fromJson(jsonData);
+      } else {
+        throw Exception("Failed to fetch order data: ${response.reasonPhrase}");
+      }
+    } catch (e) {
+      throw Exception("Error fetching order data: $e");
+    }
+  }
+
   Future<String?> createOrder({
-    required List<String> modalId,
-    required String promotionId,
+    required List<ItemBrief> items,
     required int useVpoint,
     required int useBalance,
     required String giftEmail,
   }) async {
     final String apiUrl = 'https://api.vouchee.shop/api/v1/order/create_order';
-
+    final List<Map<String, dynamic>> itemBriefList =
+        items.map((item) => item.toJson()).toList();
     try {
       final body = jsonEncode({
-        "item_brief": [
-          {"modalId": modalId}
-        ],
+        "item_brief": itemBriefList,
         "use_VPoint": useVpoint,
         "use_balance": useBalance,
         "gift_email": giftEmail
@@ -518,7 +575,7 @@ class ApiServices {
         },
         body: body,
       );
-
+      print(response.body);
       if (response.statusCode == 200) {
         orderID = jsonDecode(response.body)['value'];
         print('Order created: $orderID');
@@ -563,7 +620,7 @@ class ApiServices {
     }
   }
 
-  Future<bool> topUpRequest({required num aoumt}) async {
+  Future<String?> topUpRequest({required num aoumt}) async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/topUpRequest/create_top_up_request';
 
@@ -583,15 +640,15 @@ class ApiServices {
 
       if (response.statusCode == 200) {
         print('request top up ok');
-        return true;
+        return orderID;
       } else {
         // Handle error
         print("Failed to create order: ${response.body}");
-        return false;
+        return null;
       }
     } catch (e) {
       print("Error during order: $e");
-      return false;
+      return null;
     }
   }
 
@@ -610,7 +667,7 @@ class ApiServices {
       if (response.statusCode == 200) {
         // Decode the response body
         final List<dynamic> jsonData = json.decode(response.body);
-        print(shopID);
+
         return jsonData.map((promo) => Promotion.fromJson(promo)).toList();
       } else {
         throw Exception(
@@ -618,6 +675,35 @@ class ApiServices {
       }
     } catch (e) {
       throw Exception("Error fetching promotion data: $e");
+    }
+  }
+
+  Future<List<MyVoucher>?> fetchMyVoucher() async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth'
+        },
+      );
+      print('auth: $auth');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body)['results'];
+        print(jsonData);
+        return jsonData
+            .map((myVoucher) => MyVoucher.fromJson(myVoucher))
+            .toList();
+      } else {
+        throw Exception('Chưa có voucher');
+      }
+    } catch (e) {
+      print('Error: $e');
+      return null;
     }
   }
 }
