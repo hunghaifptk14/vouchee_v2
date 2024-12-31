@@ -4,10 +4,12 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vouchee/core/configs/assets/app_image.dart';
 import 'package:vouchee/core/configs/assets/app_vector.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
+import 'package:vouchee/model/notification.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/category/category_list.dart';
 import 'package:vouchee/presentation/pages/homePage/user_name.dart';
+import 'package:vouchee/presentation/pages/notification/notification.dart';
 import 'package:vouchee/presentation/pages/voucher/voucher_detail.dart';
 import 'package:vouchee/presentation/pages/voucher/voucher_list.dart';
 import 'package:vouchee/presentation/pages/wallet/wallet_bar.dart';
@@ -27,6 +29,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _isSearching = false;
   late Future<List<Voucher>> futureUsers;
+  late Future<List<NotificationReceiver>> futureNoti;
   ApiServices apiServices = ApiServices();
   List<Voucher> _users = [];
   List<Voucher> _filteredUsers = [];
@@ -36,6 +39,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     futureUsers = apiServices.fetchVouchers();
+    futureNoti = apiServices.getNotification();
   }
 
   void _filterUsers(String query) {
@@ -102,7 +106,15 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   SizedBox(
                                     child: IconButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  NotificationPage(),
+                                            ),
+                                          );
+                                        },
                                         icon: SvgPicture.asset(
                                             AppVector.notificationIcon)),
                                   ),
@@ -119,14 +131,7 @@ class _HomePageState extends State<HomePage> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(2.0),
                                           child: Center(
-                                            child: Text(
-                                              '4',
-                                              style: TextStyle(
-                                                  fontSize: 8,
-                                                  color: AppColor.white,
-                                                  fontWeight: FontWeight.w700),
-                                            ),
-                                          ),
+                                              child: _getReceiverMessage()),
                                         ),
                                       ))
                                 ],
@@ -276,6 +281,35 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _getReceiverMessage() {
+    return FutureBuilder<List<NotificationReceiver>>(
+      future: futureNoti,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No items'));
+        } else {
+          // Safely access the message list and its length
+          List<NotificationReceiver> message = snapshot.data!;
+          int messageCount = message.length;
+
+          return Center(
+            child: Text(
+              '$messageCount',
+              style: TextStyle(
+                  fontSize: 8,
+                  color: AppColor.white,
+                  fontWeight: FontWeight.w700),
+            ),
+          );
+        }
+      },
     );
   }
 

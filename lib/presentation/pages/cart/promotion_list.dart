@@ -41,69 +41,71 @@ class _PromotionListState extends State<PromotionList> {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData) {
               return Center(child: Text('No items'));
-            }
-            List<Promotion> promotion = snapshot.data!;
-            return ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.all(4.0),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final promo = promotion[index];
-                  return InkWell(
-                    onTap: () {
-                      widget.onPromotionSelected(
-                          promo.name, promo.id, promo.percentDiscount);
-                    },
-                    child: Container(
-                      margin: EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(7),
-                          border:
-                              Border.all(width: 1, color: AppColor.primary)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              promo.name,
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Số lượng',
-                                      style:
-                                          TextStyle(color: AppColor.lightGrey),
-                                    ),
-                                    SizedBox(
-                                      width: 4,
-                                    ),
-                                    Text(promo.stock.toString()),
-                                  ],
-                                ),
-                                Text(
-                                  '-${promo.percentDiscount.toString()}%',
-                                  style: TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
-                          ],
+            } else {
+              List<Promotion> promotion = snapshot.data!;
+              return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(4.0),
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final promo = promotion[index];
+                    return InkWell(
+                      onTap: () {
+                        widget.onPromotionSelected(
+                            promo.name, promo.id, promo.percentDiscount);
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(7),
+                            border:
+                                Border.all(width: 1, color: AppColor.primary)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                promo.name,
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              SizedBox(
+                                height: 8,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Số lượng',
+                                        style: TextStyle(
+                                            color: AppColor.lightGrey),
+                                      ),
+                                      SizedBox(
+                                        width: 4,
+                                      ),
+                                      Text(promo.stock.toString()),
+                                    ],
+                                  ),
+                                  Text(
+                                    '-${promo.percentDiscount.toString()}%',
+                                    style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                });
+                    );
+                  });
+            }
           }),
     );
   }

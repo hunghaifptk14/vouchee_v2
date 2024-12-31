@@ -1,6 +1,14 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
+import 'package:vouchee/model/transactions.dart';
+import 'package:vouchee/model/wallet.dart';
+import 'package:vouchee/networking/api_request.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -10,13 +18,54 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  String _currencyFormat(double amount) {
+  ApiServices apiServices = ApiServices();
+  late Future<Wallet> futureWallet;
+  late Future<List<BuyerWalletTransaction>> futureWalletTransactions;
+
+  String? getTopUpIDString;
+  String? getWithDrawIDString;
+  int balance = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWalletData();
+    futureWalletTransactions = apiServices.fetchBuyerTransaction();
+  }
+
+  Future<void> fetchWalletData() async {
+    Wallet wallet = await apiServices.fetchWallet();
+
+    setState(() {
+      balance = wallet.totalBalance;
+    });
+  }
+
+  String _currencyFormat(int amount) {
     String format = NumberFormat.currency(
       locale: 'vi_VN',
       symbol: '₫',
       decimalDigits: 0, // No decimal digits
     ).format(amount);
     return format;
+  }
+
+  Future<void> _topUpRequest(amount) async {
+    await apiServices.topUpRequest(amount: amount);
+    String? getTopupID() {
+      return getTopUpIDString = apiServices.getTopUpID();
+    }
+
+    getTopupID();
+  }
+
+  Future<void> _withDrawRequest(amount) async {
+    await apiServices.withdrawRequest(amount: amount);
+    String? getWithDrawID() {
+      return getWithDrawIDString = apiServices.getDrawID();
+    }
+
+    getWithDrawID();
   }
 
   @override
@@ -64,20 +113,14 @@ class _WalletPageState extends State<WalletPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Divider(),
           ),
-          // Transaction List
-          Expanded(
-            child: _buildTransactionList(),
-          ),
+          SingleChildScrollView(
+              child: Column(
+            children: [
+              _showtransactions(context),
+            ],
+          )), // Flexible takes available space
         ],
       ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: () {
-      //     // Add functionality for adding money
-      //   },
-      //   label: Text('Nạp tiền'),
-      //   icon: Icon(Icons.add),
-      //   backgroundColor: Colors.blueAccent,
-      // ),
     );
   }
 
@@ -121,7 +164,7 @@ class _WalletPageState extends State<WalletPage> {
                 width: 16,
               ),
               Text(
-                _currencyFormat(5250000),
+                _currencyFormat(balance),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -161,7 +204,7 @@ class _WalletPageState extends State<WalletPage> {
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  // Add functionality for "Add Money"
+                  _showTopUpDialog(context);
                 },
                 icon: Icon(Icons.add, color: Colors.white),
                 label: Text(
@@ -174,7 +217,7 @@ class _WalletPageState extends State<WalletPage> {
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  // Add functionality for "Withdraw"
+                  _showWithdrawDialog(context);
                 },
                 icon: Icon(Icons.arrow_downward, color: Colors.white),
                 label:
@@ -238,6 +281,178 @@ class _WalletPageState extends State<WalletPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _showTopUpDialog(BuildContext context) {
+    TextEditingController amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          width: double.infinity,
+          child: AlertDialog(
+            title: Text('Nhập số tiền nạp'),
+            content: TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Hủy'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('Nạp'),
+                onPressed: () {
+                  String amount = amountController.text;
+                  _topUpRequest(amount);
+                  Navigator.of(context).pop();
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 10),
+                              SizedBox(
+                                height: 240,
+                                width: 240,
+                                child: Image.network(
+                                  'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=$amount&des=TOP$getTopUpIDString&template=TEMPLATE&download=DOWNLOAD',
+                                ),
+                              ),
+                              SizedBox(
+                                height: 8,
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final path =
+                                      '${Directory.systemTemp.path}/QR-code.jpg';
+                                  await Dio().download(
+                                    'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=$amount&des=TOP$getTopUpIDString&template=TEMPLATE&download=DOWNLOAD',
+                                    path,
+                                  );
+                                  await Gal.putImage(path);
+                                  TopSnackbar.show(context, 'Đã tải ảnh');
+                                },
+                                child: SizedBox(
+                                  width: 100,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.download_outlined,
+                                        color: AppColor.white,
+                                      ),
+                                      SizedBox(
+                                        width: 8,
+                                      ),
+                                      Text(
+                                        'Tải ảnh',
+                                        style: TextStyle(
+                                          color: AppColor.white,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showWithdrawDialog(BuildContext context) {
+    TextEditingController amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Nhập số tiền rút'),
+          content: TextField(
+            controller: amountController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Hủy'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Rút tiền'),
+              onPressed: () {
+                String amount = amountController.text;
+                _withDrawRequest(amount);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _showtransactions(BuildContext context) {
+    return FutureBuilder<List<BuyerWalletTransaction>>(
+      future: futureWalletTransactions,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No transactions found'));
+        }
+
+        List<BuyerWalletTransaction> transactions = snapshot.data ?? [];
+
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: transactions.length,
+          itemBuilder: (context, index) {
+            final transaction = transactions[index];
+
+            return ListTile(
+              title: Text(transaction.note.toString()),
+              subtitle: Text(transaction.createDate.toString()),
+              trailing: Text(
+                transaction.amount.toString(),
+                style: TextStyle(
+                  color:
+                      transaction.type == 'TOPUP' ? Colors.red : Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          },
         );
       },
     );

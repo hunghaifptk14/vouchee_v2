@@ -4,6 +4,7 @@ class MyVoucher {
   final String id;
   final String title;
   final String image;
+
   final int voucherCodeCount;
   final String sellerId;
   final String sellerImage;

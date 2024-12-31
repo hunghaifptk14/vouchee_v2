@@ -13,11 +13,11 @@ class WalletBar extends StatefulWidget {
 }
 
 class _WalletBarState extends State<WalletBar> {
-  double balance = 0;
-  bool isLoading = true;
+  int balance = 0;
+
   bool showBalance = true;
   final ApiServices getwallet = ApiServices();
-  late Future<Wallet?> futureWallet;
+  late Future<Wallet> futureWallet;
   @override
   void initState() {
     super.initState();
@@ -25,16 +25,14 @@ class _WalletBarState extends State<WalletBar> {
   }
 
   Future<void> fetchWalletData() async {
-    Wallet? wallet = await getwallet.fetchWallet();
-    if (mounted || wallet == null) {
-      setState(() {
-        balance = wallet!.balance;
-        isLoading = false;
-      });
-    }
+    Wallet wallet = await getwallet.fetchWallet();
+
+    setState(() {
+      balance = wallet.totalBalance;
+    });
   }
 
-  String _currencyFormat(double amount) {
+  String _currencyFormat(int amount) {
     String format = NumberFormat.currency(
       locale: 'vi_VN',
       symbol: '₫',
@@ -69,23 +67,18 @@ class _WalletBarState extends State<WalletBar> {
                   Row(
                     children: [
                       Text('Số dư: '),
-                      SizedBox(width: 4),
-                      isLoading
-                          ? CircularProgressIndicator() // Loading indicator while fetching data
-                          : balance != null
-                              ? Text(
-                                  showBalance
-                                      ? _currencyFormat(balance)
-                                      : "**********",
-                                  style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600),
-                                )
-                              : Text(
-                                  "bạn chưa có ví",
-                                  style: TextStyle(
-                                      fontSize: 11, color: Colors.red),
-                                ),
+                      balance != ''
+                          ? Text(
+                              showBalance
+                                  ? _currencyFormat(balance)
+                                  : "**********",
+                              style: TextStyle(
+                                  fontSize: 11, fontWeight: FontWeight.w600),
+                            )
+                          : Text(
+                              "bạn chưa có ví",
+                              style: TextStyle(fontSize: 11, color: Colors.red),
+                            ),
                     ],
                   ),
                   IconButton(

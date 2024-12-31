@@ -1,34 +1,19 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 class Wallet {
-  // List<dynamic> transactions;
-  String id;
-  double balance;
-  String status;
-  String createDate;
-  String createBy;
-  String? updateDate;
-  String? updateBy;
-
+  int totalBalance;
+  String? bankAccount;
+  String? bankName;
   Wallet({
-    // required this.transactions,
-    required this.id,
-    required this.balance,
-    required this.status,
-    required this.createDate,
-    required this.createBy,
-    this.updateDate,
-    this.updateBy,
+    required this.totalBalance,
+    this.bankAccount,
+    this.bankName,
   });
 
   factory Wallet.fromJson(Map<String, dynamic> json) {
     return Wallet(
-      // transactions: json['transactions'],
-      id: json['id'],
-      balance: (json['balance'] as num).toDouble(),
-      status: json['status'],
-      createDate: json['createDate'],
-      createBy: json['createBy'],
-      updateDate: json['updateDate'],
-      updateBy: json['updateBy'],
+      totalBalance: json['totalBalance'],
+      bankAccount: json['bankAccount'] ?? '',
+      bankName: json['bankName'] ?? '',
     );
   }
 }

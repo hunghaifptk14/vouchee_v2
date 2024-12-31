@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:vouchee/model/cart.dart';
 import 'package:vouchee/model/category.dart';
@@ -9,22 +11,49 @@ import 'package:vouchee/model/item_brief.dart';
 import 'package:vouchee/model/modal.dart';
 import 'package:vouchee/model/my_voucher.dart';
 import 'package:vouchee/model/near_voucher.dart';
+import 'package:vouchee/model/notification.dart';
 import 'package:vouchee/model/order.dart';
 import 'package:vouchee/model/promotion.dart';
+import 'package:vouchee/model/rating.dart';
+import 'package:vouchee/model/transactions.dart';
 import 'package:vouchee/model/user.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/model/wallet.dart';
 
-// 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjZXJ0c2VyaWFsbnVtYmVyIjoiMTY5NjY3ZTItZTA4ZC00ODBlLWFiODAtZGMzYWYxNTdhYzk4IiwiZW1haWwiOiJuZ3V5ZW5odW5naGFpazE0QGdtYWlsLmNvbSIsImFjdG9ydCI6ImhhaSBuZ3V5ZW4iLCJyb2xlIjoiVVNFUiIsIm5iZiI6MTczMTg1NjA0NiwiZXhwIjoxNzQ5ODU2MDQ2LCJpYXQiOjE3MzE4NTYwNDZ9.w09IHK-EYF7Q-AL8RiyD6R2JlgbkyfNu-d9l4anz0P0';
 String? auth;
 String? orderID;
 String? userName;
+String? topUpID;
+String? drawID;
 
 class ApiServices {
+  Future<String?> getDeviceToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    try {
+      String? token = await messaging.getToken();
+      if (token != null) {
+        print("Device Token: $token");
+
+        return token;
+      }
+    } catch (e) {
+      print("Error getting device token: $e");
+    }
+    return null;
+  }
+
   Future<String?> postToken(String accessToken) async {
+    final deviceToken = await getDeviceToken();
+
+    if (deviceToken == null) {
+      print("Device token is null.");
+      return null;
+    }
     final String apiUrl =
-        'https://api.vouchee.shop/api/v1/auth/login_with_google_token?token=';
-    final url = Uri.parse('$apiUrl$accessToken');
+        'https://api.vouchee.shop/api/v1/auth/login_with_google_token?token=$accessToken&deviceToken=$deviceToken';
+    final url = Uri.parse(apiUrl);
+    log(apiUrl);
 
     try {
       final response = await http.post(
@@ -47,8 +76,7 @@ class ApiServices {
         return null;
       }
     } catch (e) {
-      print('Error: $e');
-      return null;
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -152,8 +180,7 @@ class ApiServices {
         return [];
       }
     } catch (e) {
-      print('Error fetching cart items: $e');
-      return [];
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -214,7 +241,7 @@ class ApiServices {
     }
   }
 
-  Future<Wallet?> fetchWallet() async {
+  Future<Wallet> fetchWallet() async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/wallet/get_buyer_wallet';
 
@@ -226,17 +253,16 @@ class ApiServices {
           'Authorization': 'Bearer $auth'
         },
       );
-      print('auth: $auth');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+
         return Wallet.fromJson(jsonData);
       } else {
         throw Exception('Chưa có ví');
       }
     } catch (e) {
-      print('Error: $e');
-      return null;
+      throw Exception('Không tải được wallet $e');
     }
   }
 
@@ -252,7 +278,6 @@ class ApiServices {
           'Authorization': 'Bearer $auth'
         },
       );
-      print('auth: $auth');
 
       if (response.statusCode == 200) {
         return true;
@@ -260,19 +285,18 @@ class ApiServices {
         throw Exception('Chưa có ví');
       }
     } catch (e) {
-      print('Error: $e');
-      return false;
+      throw Exception("Error fetching data: $e");
     }
   }
 
-  Future<User> fetchUsers(String userID) async {
+  Future<AppUser> fetchUsers(String userID) async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/auth/login_with_google_token?token=';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      return User.fromJson(jsonData);
+      return AppUser.fromJson(jsonData);
     } else {
       throw Exception('Không tải được thông tin');
     }
@@ -305,8 +329,7 @@ class ApiServices {
         return false;
       }
     } catch (e) {
-      print('Error: $e');
-      return false;
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -333,8 +356,7 @@ class ApiServices {
         return false;
       }
     } catch (e) {
-      print('Error: $e');
-      return false;
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -363,8 +385,7 @@ class ApiServices {
         return false;
       }
     } catch (e) {
-      print('Error: $e');
-      return false;
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -392,8 +413,7 @@ class ApiServices {
         return false;
       }
     } catch (e) {
-      print('Error: $e');
-      return false;
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -422,8 +442,7 @@ class ApiServices {
         return false;
       }
     } catch (e) {
-      print('Error: $e');
-      return false;
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -474,19 +493,16 @@ class ApiServices {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
-          "Content-Type":
-              "application/json-patch+json", // Ensure correct content type
-          "Authorization": 'Bearer $auth', // Add your authorization token here
+          "Content-Type": "application/json-patch+json",
+          "Authorization": 'Bearer $auth',
         },
         body: body,
       );
 
-      // Debugging: Print the request body and response body
-
       if (response.statusCode == 200) {
         // Successful response
         final jsonData = json.decode(response.body);
-        print('Response : $jsonData');
+        print('Response checkout : $jsonData');
 
         return Checkout.fromJson(jsonData);
       } else {
@@ -495,8 +511,7 @@ class ApiServices {
         return null;
       }
     } catch (e) {
-      print("Error during checkout: $e");
-      return null;
+      throw Exception("Error fetching data: $e");
     }
   }
 
@@ -578,22 +593,32 @@ class ApiServices {
       print(response.body);
       if (response.statusCode == 200) {
         orderID = jsonDecode(response.body)['value'];
-        print('Order created: $orderID');
+        // print('Order created: $orderID');
         return orderID;
       } else {
         // Handle error
-        print("Failed to create order: ${response.body}");
+
+        print("Lỗi khi tạo đơn hàng");
         return null;
       }
     } catch (e) {
-      print("Error during order: $e");
-      return null;
+      throw Exception("Error fetching data: $e");
     }
   }
 
   String? getOrderID() {
     print('get order ID: $orderID');
     return orderID;
+  }
+
+  String? getTopUpID() {
+    print('get topup ID: $topUpID');
+    return topUpID;
+  }
+
+  String? getDrawID() {
+    print('get draw ID: $drawID');
+    return drawID;
   }
 
   Future<String> getOrderStatus() async {
@@ -620,13 +645,13 @@ class ApiServices {
     }
   }
 
-  Future<String?> topUpRequest({required num aoumt}) async {
+  Future<String?> topUpRequest({required String amount}) async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/topUpRequest/create_top_up_request';
 
     try {
       // Create the request body
-      final body = jsonEncode({"aoumt": aoumt});
+      final body = jsonEncode({"amount": amount});
 
       // Make the POST request
       final response = await http.post(
@@ -639,20 +664,53 @@ class ApiServices {
       );
 
       if (response.statusCode == 200) {
+        topUpID = jsonDecode(response.body)['value'];
         print('request top up ok');
-        return orderID;
+        return topUpID;
       } else {
         // Handle error
-        print("Failed to create order: ${response.body}");
+        print("Failed to topup: ${response.body}");
         return null;
       }
     } catch (e) {
-      print("Error during order: $e");
-      return null;
+      throw Exception("Error fetching data: $e");
+    }
+  }
+
+  Future<String?> withdrawRequest({required String amount}) async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/withdraw/create_withdraw_request';
+
+    try {
+      // Create the request body
+      final body = jsonEncode({"amount": amount});
+
+      // Make the POST request
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          "Content-Type": "application/json-patch+json",
+          "Authorization": 'Bearer $auth'
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        drawID = jsonDecode(response.body)['value'];
+        print('request withdraw ok');
+        return drawID;
+      } else {
+        // Handle error
+        print("Failed to withdraw: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      throw Exception("Error fetching data: $e");
     }
   }
 
   Future<List<Promotion>> fetchPromotionByShopID(String shopID) async {
+    print(shopID);
     final url = Uri.parse(
         'https://api.vouchee.shop/api/v1/shopPromotion/get_promotions_by_shop_id?shopId=$shopID');
 
@@ -667,7 +725,7 @@ class ApiServices {
       if (response.statusCode == 200) {
         // Decode the response body
         final List<dynamic> jsonData = json.decode(response.body);
-
+        print(jsonData);
         return jsonData.map((promo) => Promotion.fromJson(promo)).toList();
       } else {
         throw Exception(
@@ -678,9 +736,9 @@ class ApiServices {
     }
   }
 
-  Future<List<MyVoucher>?> fetchMyVoucher() async {
+  Future<List<MyVoucher>?> fetchMyUnuseVoucher() async {
     final String apiUrl =
-        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers';
+        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers?status=1';
 
     try {
       final response = await http.get(
@@ -690,11 +748,10 @@ class ApiServices {
           'Authorization': 'Bearer $auth'
         },
       );
-      print('auth: $auth');
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body)['results'];
-        print(jsonData);
+
         return jsonData
             .map((myVoucher) => MyVoucher.fromJson(myVoucher))
             .toList();
@@ -702,8 +759,288 @@ class ApiServices {
         throw Exception('Chưa có voucher');
       }
     } catch (e) {
-      print('Error: $e');
-      return null;
+      throw Exception("Error fetching data: $e");
+    }
+  }
+
+  Future<List<MyVoucher>?> fetchMyUsedVoucher() async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers?status=2';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body)['results'];
+
+        return jsonData
+            .map((myVoucher) => MyVoucher.fromJson(myVoucher))
+            .toList();
+      } else {
+        throw Exception('Chưa có voucher');
+      }
+    } catch (e) {
+      throw Exception("Error fetching data: $e");
+    }
+  }
+
+  Future<List<MyVoucher>?> fetchMyPendingVoucher() async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers?status=0';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body)['results'];
+
+        return jsonData
+            .map((myVoucher) => MyVoucher.fromJson(myVoucher))
+            .toList();
+      } else {
+        throw Exception('Chưa có voucher');
+      }
+    } catch (e) {
+      throw Exception("Error fetching data: $e");
+    }
+  }
+
+  Future<AppUser> getCurrentUser() async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/user/get_current_user';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return AppUser.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Error fetching user');
+      }
+    } catch (e) {
+      throw Exception("Error fetching user: $e");
+    }
+  }
+
+  Future<void> updateBuyerBank(
+      String? bankAccount, String? bankName, String? bankNumber) async {
+    String apiUrl =
+        'https://api.vouchee.shop/api/v1/user/update_user_bank?walletTypeEnum=0';
+    final url = Uri.parse(apiUrl);
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json-pacth+json',
+          'Authorization': 'Bearer $auth'
+        },
+        body: jsonEncode({
+          'bankAccount': bankAccount,
+          'bankName': bankName,
+          'bankNumber': bankNumber,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('ok');
+      } else {
+        print('false');
+      }
+    } catch (e) {
+      throw Exception("Error fetching data: $e");
+    }
+  }
+
+  Future<void> updateBuyerInfo(
+      String? name, String? phoneNumber, String? image) async {
+    String apiUrl = 'https://api.vouchee.shop/api/v1/user/update_user';
+    final url = Uri.parse(apiUrl);
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json-pacth+json',
+          'Authorization': 'Bearer $auth'
+        },
+        body: jsonEncode({
+          'name': name,
+          'phoneNumber': phoneNumber,
+          'image': image,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('ok');
+      } else {
+        print('false');
+      }
+    } catch (e) {
+      throw Exception("Error fetching data: $e");
+    }
+  }
+
+  Future<void> updateVoucherCodeStatus(
+    String? id,
+  ) async {
+    String apiUrl =
+        'https://api.vouchee.shop/api/v1/voucherCode/update_status_voucher_code/$id?status=2';
+    final url = Uri.parse(apiUrl);
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json-pacth+json',
+          'Authorization': 'Bearer $auth'
+        },
+        body: jsonEncode({
+          'id': id,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('status ok');
+      } else {
+        print('false');
+      }
+    } catch (e) {
+      throw Exception("Error fetching data: $e");
+    }
+  }
+
+  Future<bool> updateRating(Rating rating) async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/rating/create_rating';
+    final url = Uri.parse(apiUrl);
+
+    // Prepare the request body
+    final body = {
+      "orderId": rating.orderId,
+      "modalId": rating.modalId,
+      "medias": rating.medias.map((media) => {"url": media.url}).toList(),
+      "qualityStar": rating.qualityStar,
+      "serviceStar": rating.serviceStar,
+      "sellerStar": rating.sellerStar,
+      "comment": rating.comment,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $auth',
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        print("Rating updated successfully: ${response.body}");
+        return true;
+      } else {
+        print("Failed to update rating: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error during API call: $e");
+      return false;
+    }
+  }
+
+  Future<MyVoucher> getVoucherCodeById(String codeId) async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/myVoucher/get_voucher_code/$codeId';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('get code ok');
+        return MyVoucher.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Error code id ');
+      }
+    } catch (e) {
+      throw Exception("Error code id : $e");
+    }
+  }
+
+  Future<List<NotificationReceiver>> getNotification() async {
+    final url = Uri.parse(
+        'https://api.vouchee.shop/api/v1/notification/get_receiver_notifications');
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $auth',
+      };
+
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        // Decode the response body
+        final List<dynamic> jsonData = json.decode(response.body)['results'];
+        return jsonData
+            .map((noti) => NotificationReceiver.fromJson(noti))
+            .toList();
+      } else {
+        throw Exception("Failed to fetch order data: ${response.reasonPhrase}");
+      }
+    } catch (e) {
+      throw Exception("Error fetching order data: $e");
+    }
+  }
+
+  Future<List<BuyerWalletTransaction>> fetchBuyerTransaction() async {
+    final url = Uri.parse(
+        'https://api.vouchee.shop/api/v1/wallet/get_buyer_transactions');
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $auth',
+      };
+
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        // Decode the response body
+        final List<dynamic> jsonData = json.decode(response.body)['results'];
+        print(jsonData);
+        return jsonData
+            .map((trans) => BuyerWalletTransaction.fromJson(trans))
+            .toList();
+      } else {
+        throw Exception("Failed to fetch order data: ${response.reasonPhrase}");
+      }
+    } catch (e) {
+      throw Exception("Error fetching order data: $e");
     }
   }
 }

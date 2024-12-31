@@ -122,8 +122,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                           ),
                         ),
                         Text(
-                          // widget.modal.endDate.toString(),
-                          '24-11-2024',
+                          widget.modal.endDate.toString(),
                           style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w500),
                         ),
@@ -184,21 +183,21 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                                       color: AppColor.secondary, fontSize: 14),
                                 ),
                               )),
-                          ElevatedButton(
-                            onPressed: () {
-                              // Provider.of<CartProvider>(context, listen: false)
-                              //     .addToCart(widget.voucher);
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 16),
-                              child: Text(
-                                'Mua ngay',
-                                style: TextStyle(
-                                    color: AppColor.white, fontSize: 14),
-                              ),
-                            ),
-                          )
+                          // ElevatedButton(
+                          //   onPressed: () {
+                          //     // Provider.of<CartProvider>(context, listen: false)
+                          //     //     .addToCart(widget.voucher);
+                          //   },
+                          //   child: Padding(
+                          //     padding: EdgeInsets.symmetric(
+                          //         vertical: 8, horizontal: 16),
+                          //     child: Text(
+                          //       'Mua ngay',
+                          //       style: TextStyle(
+                          //           color: AppColor.white, fontSize: 14),
+                          //     ),
+                          //   ),
+                          // )
                         ],
                       ),
                     ),

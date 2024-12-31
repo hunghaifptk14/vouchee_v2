@@ -103,7 +103,10 @@ class _SuggestionPageState extends State<SuggestionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Voucher gần bạn'),
+        title: Text(
+          'Địa chỉ áp dụng voucher gần bạn',
+          style: TextStyle(fontSize: 18),
+        ),
         backgroundColor: Colors.transparent,
       ),
       bottomNavigationBar: BottomAppBarcustom(),

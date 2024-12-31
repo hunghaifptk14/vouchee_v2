@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:vouchee/core/configs/assets/app_image.dart';
 import 'package:vouchee/core/configs/assets/app_vector.dart';
+import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
 import 'package:vouchee/presentation/pages/login/google_service.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';
@@ -18,13 +20,15 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GoogleSignInService _authService = GoogleSignInService();
+  ApiServices apiServices = ApiServices();
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: TopAppBar(
-      //   topTitle: SvgPicture.asset(AppVector.logo),
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -48,25 +52,17 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _loginText() {
-    return const Text(
-      'Đăng nhập',
-      style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
-    );
-  }
-
-  Widget _inputLogin(BuildContext context) {
-    return TextField(
-      decoration: const InputDecoration(hintText: 'Số điện thoại / Email')
-          .applyDefaults(Theme.of(context).inputDecorationTheme),
-    );
-  }
-
-  Widget _inputPassword(BuildContext context) {
-    return TextField(
-      decoration: const InputDecoration(hintText: 'Nhập mật khẩu')
-          .applyDefaults(Theme.of(context).inputDecorationTheme),
-    );
+  Widget _Logout() {
+    return IconButton(
+        onPressed: () async {
+          await GoogleSignIn().signOut();
+          FirebaseAuth.instance.signOut();
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => LoginPage()));
+        },
+        icon: Icon(Icons.logout));
   }
 
   Widget _loginWithGoogle() {
@@ -114,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: const Text(
                         'Đăng nhập với Google',
                         style: TextStyle(color: AppColor.white),

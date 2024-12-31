@@ -57,52 +57,7 @@ class _CategoryListState extends State<CategoryList> {
                         ),
                       );
                     },
-                    child:
-                        // Padding(
-                        //   padding: const EdgeInsets.only(right: 8),
-                        //   child: Container(
-                        //     width: 80,
-                        //     height: 80,
-                        //     decoration: BoxDecoration(
-                        //       borderRadius: BorderRadius.circular(14),
-                        //       color: AppColor.white,
-                        //     ),
-                        //     child: Padding(
-                        //       padding: EdgeInsets.all(8),
-                        //       child: Column(
-                        //         crossAxisAlignment: CrossAxisAlignment.center,
-                        //         mainAxisAlignment: MainAxisAlignment.start,
-                        //         children: [
-                        //           Padding(
-                        //             padding: const EdgeInsets.all(0.0),
-                        //             child: ClipRRect(
-                        //               borderRadius: BorderRadius.circular(12),
-                        //               child: SvgPicture.network(
-                        //                 category.image,
-                        //                 fit: BoxFit.cover,
-                        //                 height: 32,
-                        //                 width: 32,
-                        //               ),
-                        //             ),
-                        //           ),
-                        //           Padding(
-                        //             padding: const EdgeInsets.only(top: 4.0),
-                        //             child: Text(
-                        //               category.title,
-                        //               overflow: TextOverflow.clip,
-                        //               textAlign: TextAlign.center,
-                        //               style: const TextStyle(
-                        //                 fontSize: 8,
-                        //                 fontWeight: FontWeight.w500,
-                        //               ),
-                        //             ),
-                        //           ),
-                        //         ],
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                        Padding(
+                    child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Container(
                         decoration: BoxDecoration(

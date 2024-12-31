@@ -8,7 +8,7 @@ import 'package:vouchee/model/item_brief.dart';
 import 'package:vouchee/model/modal.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/cart/promotion_list.dart';
-import 'package:vouchee/presentation/pages/cart/testCheckout.dart';
+import 'package:vouchee/presentation/pages/cart/checkout.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
@@ -125,6 +125,7 @@ class CartScreenState extends State<CartPage> {
   Future<void> _checkout() async {
     await apiServices.checkoutCart(
         items: itemBriefList, giftEmail: 'mail', useBalance: 0, useVpoint: 0);
+    print(itemBriefList);
   }
 
   double _calculateTotalPrice() {

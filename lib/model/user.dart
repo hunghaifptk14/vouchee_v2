@@ -1,78 +1,38 @@
-import 'package:vouchee/model/cart.dart';
-import 'package:vouchee/model/voucher.dart';
-import 'package:vouchee/model/wallet.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+class AppUser {
+  final String name;
+  final String email;
+  final String? phoneNumber;
+  final String role;
+  final String status;
+  final String image;
+  final String? bankName;
+  final String? bankNumber;
+  final String? bankAccount;
 
-class User {
-  String id;
-  String roleId;
-  String email;
-  Wallet buyerWallet;
-  Wallet sellerWallet;
-  String roleName;
-  String status;
-  String createDate;
-  String createBy;
-  String? updateDate;
-  String? updateBy;
-  List<Cart> carts;
-  List<Voucher> vouchers;
-  List<dynamic> orders;
-  List<dynamic> notificationToUser;
-  List<dynamic> notificationFromUser;
-  String name;
-  String? phoneNumber;
-  String image;
-  String? bankName;
-  String? bankAccount;
-
-  User({
-    required this.id,
-    required this.roleId,
-    required this.email,
-    required this.buyerWallet,
-    required this.sellerWallet,
-    required this.roleName,
-    required this.status,
-    required this.createDate,
-    required this.createBy,
-    this.updateDate,
-    this.updateBy,
-    required this.carts,
-    required this.vouchers,
-    required this.orders,
-    required this.notificationToUser,
-    required this.notificationFromUser,
+  AppUser({
     required this.name,
+    required this.email,
     this.phoneNumber,
+    required this.role,
+    required this.status,
     required this.image,
     this.bankName,
+    this.bankNumber,
     this.bankAccount,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      roleId: json['roleId'],
-      email: json['email'],
-      buyerWallet: Wallet.fromJson(json['buyerWallet']),
-      sellerWallet: Wallet.fromJson(json['sellerWallet']),
-      roleName: json['roleName'],
-      status: json['status'],
-      createDate: json['createDate'],
-      createBy: json['createBy'],
-      updateDate: json['updateDate'],
-      updateBy: json['updateBy'],
-      carts:
-          (json['carts'] as List).map((cart) => Cart.fromJson(cart)).toList(),
-      vouchers: json['vouchers'],
-      orders: json['orders'],
-      notificationToUser: json['notificationToUser'],
-      notificationFromUser: json['notificationFromUser'],
+  factory AppUser.fromJson(Map<String, dynamic> json) {
+    return AppUser(
       name: json['name'],
+      email: json['email'],
       phoneNumber: json['phoneNumber'],
+      role: json['role'],
+      status: json['status'],
       image: json['image'],
-      bankName: json['bankName'],
-      bankAccount: json['bankAccount'],
+      bankName: json['buyerWallet']['bankName'],
+      bankAccount: json['buyerWallet']['bankAccount'],
+      bankNumber: json['buyerWallet']['bankNumber'],
     );
   }
 }

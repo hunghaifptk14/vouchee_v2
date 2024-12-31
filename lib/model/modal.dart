@@ -23,6 +23,7 @@ class Modal {
   final String image;
   final String startDate;
   final String endDate;
+  final double averageRating;
   bool selected = false;
   final String? shopPromotionId;
 
@@ -48,6 +49,7 @@ class Modal {
       required this.image,
       required this.startDate,
       required this.endDate,
+      required this.averageRating,
       required this.shopPromotionId,
       this.selected = false});
 
@@ -75,6 +77,7 @@ class Modal {
       status: json['status'] ?? '',
       startDate: json['startDate'] ?? '',
       endDate: json['endDate'] ?? '',
+      averageRating: (json['averageRating'] ?? 0).toDouble(),
       shopPromotionId: json['shopPromotionId'] ?? '',
     );
   }
@@ -101,6 +104,7 @@ class Modal {
       'image': image,
       'status': status,
       'startDate': startDate,
+      'averageRating': averageRating,
       'endDate': endDate,
     };
   }
@@ -112,6 +116,6 @@ class Modal {
 
   @override
   String toString() {
-    return 'Modal(id: $id, voucherId: $voucherId, brandId: $brandId, brandName: $brandName, brandImage: $brandImage, title: $title, quantity: $quantity, stock: $stock, originalPrice: $originalPrice, sellPrice: $sellPrice, shopDiscountMoney: $shopDiscountMoney, shopDiscountPercent: $shopDiscountPercent, discountPrice: $discountPrice, salePrice: $salePrice, totalUnitPrice: $totalUnitPrice, totalDiscountPrice: $totalDiscountPrice, totalFinalPrice: $totalFinalPrice, status: $status, image: $image, startDate: $startDate, endDate: $endDate, selected: $selected, shopPromotionId: $shopPromotionId)';
+    return 'Modal(id: $id, voucherId: $voucherId, brandId: $brandId, brandName: $brandName, brandImage: $brandImage, title: $title, quantity: $quantity, stock: $stock, originalPrice: $originalPrice, sellPrice: $sellPrice, shopDiscountMoney: $shopDiscountMoney, shopDiscountPercent: $shopDiscountPercent, discountPrice: $discountPrice, salePrice: $salePrice, totalUnitPrice: $totalUnitPrice, totalDiscountPrice: $totalDiscountPrice, totalFinalPrice: $totalFinalPrice, status: $status, image: $image, startDate: $startDate, endDate: $endDate, averageRating: $averageRating, selected: $selected, shopPromotionId: $shopPromotionId)';
   }
 }

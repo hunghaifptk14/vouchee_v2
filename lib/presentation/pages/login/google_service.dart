@@ -32,6 +32,7 @@ class GoogleSignInService {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
+        print('no user');
         return null; // If the user cancels the login
       }
 
