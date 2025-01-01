@@ -121,19 +121,7 @@ class _HomePageState extends State<HomePage> {
                                   Positioned(
                                       top: 8,
                                       right: 8,
-                                      child: Container(
-                                        height: 15,
-                                        width: 15,
-                                        decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50))),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(2.0),
-                                          child: Center(
-                                              child: _getReceiverMessage()),
-                                        ),
-                                      ))
+                                      child: _getReceiverMessage())
                                 ],
                               ),
                             ],
@@ -285,32 +273,49 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _getReceiverMessage() {
-    return FutureBuilder<List<NotificationReceiver>>(
-      future: futureNoti,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No items'));
-        } else {
-          // Safely access the message list and its length
-          List<NotificationReceiver> message = snapshot.data!;
-          int messageCount = message.length;
+    return Container(
+        height: 15,
+        width: 15,
+        decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.all(Radius.circular(50))),
+        child: Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: Center(
+              child: FutureBuilder<List<NotificationReceiver>>(
+                future: futureNoti,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                        child: Text('0',
+                            style: TextStyle(
+                                fontSize: 8,
+                                color: AppColor.white,
+                                fontWeight: FontWeight.w700)));
+                  } else {
+                    // Safely access the message list and its length
+                    List<NotificationReceiver> message = snapshot.data!;
+                    int messageCount = message.length;
 
-          return Center(
-            child: Text(
-              '$messageCount',
-              style: TextStyle(
-                  fontSize: 8,
-                  color: AppColor.white,
-                  fontWeight: FontWeight.w700),
-            ),
-          );
-        }
-      },
-    );
+                    return Container(
+                      child: Center(
+                        child: Text(
+                          '$messageCount',
+                          style: TextStyle(
+                              fontSize: 8,
+                              color: AppColor.white,
+                              fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            )));
   }
 
   Widget _searchData() {

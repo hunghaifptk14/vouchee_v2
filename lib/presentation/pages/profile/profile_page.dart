@@ -145,7 +145,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                 const SizedBox(height: 8),
                                 Text(user.email.toString()),
                                 const SizedBox(height: 8),
-                                Text(user.phoneNumber.toString()),
+                                user.phoneNumber != null
+                                    ? Text(user.phoneNumber.toString())
+                                    : Text(
+                                        'Chưa có số điện thoại',
+                                        style: TextStyle(
+                                            color: AppColor.lightGrey),
+                                      ),
                               ],
                             ),
                           ),
@@ -173,15 +179,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                   style: TextStyle(
                                       fontSize: 14, color: AppColor.lightGrey),
                                 ),
-                                Text(user.bankName.toString()),
+                                user.bankName != ''
+                                    ? Text(user.bankName.toString())
+                                    : Text('Chưa có thông tin'),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Tên tài khoản: ',
                                   style: TextStyle(
                                       fontSize: 14, color: AppColor.lightGrey),
                                 ),
-                                Text(user.bankAccount.toString()),
-                                const SizedBox(height: 16),
+                                user.bankAccount != null
+                                    ? Text(user.bankAccount.toString())
+                                    : Text('Chưa có thông tin'),
+                                const SizedBox(height: 8),
                                 Text(
                                   'Số tài khoản:',
                                   style: TextStyle(
@@ -193,6 +203,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     TextButton(
+                                      style: TextButton.styleFrom(
+                                        minimumSize: Size.zero,
+                                        padding: EdgeInsets.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
                                       onPressed: () {
                                         Navigator.push(
                                             context,
@@ -201,8 +217,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     (BuildContext context) =>
                                                         const EditBank()));
                                       },
-                                      child:
-                                          Text('Cập nhật thông tin ngân hàng'),
+                                      child: Text(
+                                        'Cập nhật thông tin ngân hàng',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w300),
+                                      ),
                                     ),
                                   ],
                                 ),

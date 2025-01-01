@@ -122,7 +122,7 @@ class _UserSearchPageState extends State<UserSearchPage> {
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No vouchers found.'));
+                      return Center(child: Text('Không có voucher nào.'));
                     } else {
                       // Set the full list of vouchers if it's the first load
                       if (_users.isEmpty) {

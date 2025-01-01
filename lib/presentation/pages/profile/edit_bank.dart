@@ -73,9 +73,9 @@ class _EditBankState extends State<EditBank> {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             final user = snapshot.data!;
-            accountController.text = user.bankAccount!;
-            numberController.text = user.bankNumber!;
-            selectedBankName = user.bankName;
+            accountController.text = user.bankAccount ?? "";
+            numberController.text = user.bankNumber ?? "";
+            // selectedBankName = user.bankName;
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -124,7 +124,7 @@ class _EditBankState extends State<EditBank> {
                           setState(() {
                             selectedBankName = bankName;
                             selectedBankShortName = bankShortName;
-                            searchController.text = bankName; // Set search text
+                            searchController.text = bankName;
                           });
                         },
                       );
@@ -152,7 +152,7 @@ class _EditBankState extends State<EditBank> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColor.warning,
-                        fontSize: 11,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -220,7 +220,8 @@ class _EditBankState extends State<EditBank> {
                         final bankName = selectedBankName;
                         final bankAccount = accountController.text;
                         final bankNumber = numberController.text;
-
+                        print('Bank selected: $selectedBankName');
+                        print('Bank selected: $bankName');
                         if (bankName != null &&
                             bankAccount.isNotEmpty &&
                             bankNumber.isNotEmpty) {
@@ -234,18 +235,14 @@ class _EditBankState extends State<EditBank> {
                                         ProfilePage()));
                             // Close the page on success
                           } catch (error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Lỗi khi cập nhật thông tin'),
-                              ),
-                            );
+                            TopSnackbar.show(
+                                context, 'Xảy ra lỗi khi cập nhật thông tin',
+                                backgroundColor: AppColor.warning);
                           }
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Hãy điền đủ thông tin'),
-                            ),
-                          );
+                          TopSnackbar.show(
+                              context, 'Vui lòng điền đủ thông tin',
+                              backgroundColor: AppColor.warning);
                         }
                       },
                       child: const Text(

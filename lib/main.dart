@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:vouchee/core/configs/theme/app_theme.dart';
 import 'package:vouchee/presentation/pages/login/login.dart';
@@ -6,16 +7,10 @@ import 'package:vouchee/presentation/pages/login/login.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  // FirebaseAuth.instance.setLanguageCode('en');
-  runApp(
-      //   MultiProvider(
-      //   providers: [
-      //     // ChangeNotifierProvider(create: (_) => VoucherProvider()),
-      //     ChangeNotifierProvider(create: (_) => CartProvider()),
-      //   ],
-      //   child: const Vouchee(),
-      // ));
-      Vouchee());
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Message received: ${message.notification?.title}');
+  });
+  runApp(Vouchee());
 }
 
 class Vouchee extends StatelessWidget {

@@ -1,10 +1,15 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:gal/gal.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/message.dart';
 import 'package:vouchee/model/my_voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/purchased/rating.dart';
 import 'package:vouchee/presentation/widgets/bottomNav/bottom_app_bar.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class PurchedVoucher extends StatefulWidget {
   const PurchedVoucher({super.key});
@@ -100,7 +105,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No vouchers available.'));
+          return Center(child: Text('Bạn chưa có voucher nào'));
         } else {
           List<MyVoucher> myVoucher = snapshot.data!;
           // List<MyVoucher> filteredVouchers = [];
@@ -298,11 +303,56 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                                               showDialog(
                                                                                   context: context,
                                                                                   builder: (BuildContext context) {
-                                                                                    return Center(
-                                                                                        child: Padding(
-                                                                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                                                      child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network(voucherCodes.image!)),
-                                                                                    ));
+                                                                                    return Column(
+                                                                                      children: [
+                                                                                        Center(
+                                                                                            child: Padding(
+                                                                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                                                          child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network(voucherCodes.image!)),
+                                                                                          //Test
+                                                                                          // child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network('https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg')),
+                                                                                        )),
+                                                                                        ElevatedButton(
+                                                                                          onPressed: () async {
+                                                                                            final path = '${Directory.systemTemp.path}/refund-image.jpg';
+                                                                                            await Dio().download(
+                                                                                              voucherCodes.image.toString(),
+                                                                                              path,
+                                                                                            );
+                                                                                            //Test
+                                                                                            // await Dio().download(
+                                                                                            //   'https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg',
+                                                                                            //   path,
+                                                                                            // );
+                                                                                            await Gal.putImage(path);
+                                                                                            TopSnackbar.show(context, 'Đã tải ảnh');
+                                                                                          },
+                                                                                          child: SizedBox(
+                                                                                            width: 100,
+                                                                                            child: Row(
+                                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                              children: [
+                                                                                                Icon(
+                                                                                                  Icons.download_outlined,
+                                                                                                  color: AppColor.white,
+                                                                                                ),
+                                                                                                SizedBox(
+                                                                                                  width: 8,
+                                                                                                ),
+                                                                                                Text(
+                                                                                                  'Tải ảnh',
+                                                                                                  style: TextStyle(
+                                                                                                    color: AppColor.white,
+                                                                                                    fontSize: 11,
+                                                                                                  ),
+                                                                                                ),
+                                                                                              ],
+                                                                                            ),
+                                                                                          ),
+                                                                                        )
+                                                                                      ],
+                                                                                    );
                                                                                   });
                                                                               // apiServices.updateVoucherCodeStatus(voucherCodes.id);
                                                                               // updateCode(voucherCodes.status);
@@ -320,6 +370,14 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                             ),
                                                           );
                                                         });
+                                                    Future.delayed(
+                                                        Duration(minutes: 1),
+                                                        () {
+                                                      Navigator.of(context,
+                                                              rootNavigator:
+                                                                  true)
+                                                          .pop(); // Close the dialog after 5 minutes
+                                                    });
                                                   },
                                                   child: Text(
                                                     'Sử dụng voucher',
@@ -361,7 +419,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No vouchers available.'));
+          return Center(child: Text('Bạn chưa có voucher nào'));
         } else {
           List<MyVoucher> myVoucher = snapshot.data!;
 
@@ -473,7 +531,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No vouchers available.'));
+          return Center(child: Text('Bạn chưa có voucher nào'));
         } else {
           List<MyVoucher> myVoucher = snapshot.data!;
 

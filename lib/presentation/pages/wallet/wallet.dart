@@ -6,6 +6,7 @@ import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/transactions.dart';
+import 'package:vouchee/model/user.dart';
 import 'package:vouchee/model/wallet.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';
@@ -68,6 +69,32 @@ class _WalletPageState extends State<WalletPage> {
     getWithDrawID();
   }
 
+  String _DateTimeformat(String dateString) {
+    try {
+      // Parse the date string into a DateTime object
+      DateTime parsedDate = DateTime.parse(dateString);
+
+      // Format the DateTime object to 'dd-MM-yyyy'
+      String formattedDate =
+          DateFormat('HH:mm - dd/MM/yyyy').format(parsedDate);
+
+      return formattedDate;
+    } catch (e) {
+      // Handle parsing errors
+      return "Lỗi thông tin";
+    }
+  }
+
+  void sortTransactionsByDate(List<BuyerWalletTransaction> transactions) {
+    transactions.sort((a, b) {
+      DateTime dateA = DateTime.parse(a.createDate.toString());
+      DateTime dateB = DateTime.parse(b.createDate.toString());
+
+      // Sort in descending order (latest date first)
+      return dateB.compareTo(dateA);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,30 +122,22 @@ class _WalletPageState extends State<WalletPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    minimumSize: Size.zero,
-                    padding: EdgeInsets.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: () {
-                    // Add functionality for "View All"
-                  },
-                  child: Text('Xem tất cả'),
-                ),
+                // TextButton(
+                //   style: TextButton.styleFrom(
+                //     minimumSize: Size.zero,
+                //     padding: EdgeInsets.zero,
+                //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                //   ),
+                //   onPressed: () {
+                //     // Add functionality for "View All"
+                //   },
+                //   child: Text('Xem tất cả'),
+                // ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(),
-          ),
-          SingleChildScrollView(
-              child: Column(
-            children: [
-              _showtransactions(context),
-            ],
-          )), // Flexible takes available space
+
+          _showtransactions(),
         ],
       ),
     );
@@ -173,31 +192,31 @@ class _WalletPageState extends State<WalletPage> {
               ),
             ],
           ),
-          Row(
-            children: [
-              SizedBox(
-                width: 60,
-                child: Text(
-                  'V point',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 16,
-              ),
-              Text(
-                '100',
-                style: TextStyle(
-                  color: AppColor.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     SizedBox(
+          //       width: 60,
+          //       child: Text(
+          //         'V point',
+          //         style: TextStyle(
+          //           color: Colors.white,
+          //           fontSize: 16,
+          //         ),
+          //       ),
+          //     ),
+          //     SizedBox(
+          //       width: 16,
+          //     ),
+          //     Text(
+          //       '100',
+          //       style: TextStyle(
+          //         color: AppColor.white,
+          //         fontSize: 16,
+          //         fontWeight: FontWeight.w600,
+          //       ),
+          //     ),
+          //   ],
+          // ),
           SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -230,59 +249,6 @@ class _WalletPageState extends State<WalletPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildTransactionList() {
-    final transactions = [
-      {
-        "title": "Starbucks Coffee",
-        "amount": "-12.000 đ",
-        "date": "Nov 18, 2024",
-        "isExpense": true,
-      },
-      {
-        "title": "Freelance Payment",
-        "amount": "+300.000 đ",
-        "date": "Nov 15, 2024",
-        "isExpense": false,
-      },
-      {
-        "title": "Amazon Purchase",
-        "amount": "-40.000 đ",
-        "date": "Nov 12, 2024",
-        "isExpense": true,
-      },
-    ];
-
-    return ListView.builder(
-      itemCount: transactions.length,
-      itemBuilder: (context, index) {
-        final transaction = transactions[index];
-        return ListTile(
-          // leading: CircleAvatar(
-          //   backgroundColor: transaction['isExpense'] == true
-          //       ? Colors.redAccent
-          //       : Colors.green,
-          //   child: Icon(
-          //     transaction['isExpense'] == true
-          //         ? Icons.arrow_downward
-          //         : Icons.arrow_upward,
-          //     color: Colors.white,
-          //   ),
-          // ),
-          title: Text(transaction['title'] as String),
-          subtitle: Text(transaction['date'] as String),
-          trailing: Text(
-            transaction['amount'] as String,
-            style: TextStyle(
-              color:
-                  transaction['isExpense'] == true ? Colors.red : Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -420,41 +386,70 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
-  Widget _showtransactions(BuildContext context) {
-    return FutureBuilder<List<BuyerWalletTransaction>>(
-      future: futureWalletTransactions,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No transactions found'));
-        }
+  Widget _showtransactions() {
+    return Expanded(
+      // Use Expanded to let the ListView fill available vertical space
+      child: FutureBuilder<List<BuyerWalletTransaction>>(
+        future: futureWalletTransactions,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('Chưa có giao dịch.'));
+          } else {
+            List<BuyerWalletTransaction> transactions = snapshot.data ?? [];
+            sortTransactionsByDate(transactions);
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    height: 100,
+                    child: ListView.separated(
+                      itemCount: transactions.length,
+                      separatorBuilder: (context, index) =>
+                          Divider(height: 0.2),
+                      itemBuilder: (context, index) {
+                        final transaction = transactions[index];
 
-        List<BuyerWalletTransaction> transactions = snapshot.data ?? [];
-
-        return ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: transactions.length,
-          itemBuilder: (context, index) {
-            final transaction = transactions[index];
-
-            return ListTile(
-              title: Text(transaction.note.toString()),
-              subtitle: Text(transaction.createDate.toString()),
-              trailing: Text(
-                transaction.amount.toString(),
-                style: TextStyle(
-                  color:
-                      transaction.type == 'TOPUP' ? Colors.red : Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+                        return ListTile(
+                          title: Text(
+                            transaction.note.toString(),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500, fontSize: 14),
+                          ),
+                          subtitle: Text(_DateTimeformat(
+                              transaction.createDate.toString())),
+                          trailing: Text(
+                            _currencyFormat(transaction.amount),
+                            style: TextStyle(
+                                color: transaction.type == 'TOPUP' ||
+                                        transaction.type == 'EXPIRED_ORDER'
+                                    ? Colors.green
+                                    : Colors.red,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14),
+                          ),
+                        );
+                      },
+                    ),
+                  )),
             );
-          },
-        );
-      },
+          }
+        },
+      ),
     );
   }
 }

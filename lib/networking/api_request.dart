@@ -289,10 +289,10 @@ class ApiServices {
     }
   }
 
-  Future<AppUser> fetchUsers(String userID) async {
+  Future<AppUser> getUserInfo() async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/auth/login_with_google_token?token=';
-    final response = await http.get(Uri.parse(apiUrl));
+    final response = await http.get(Uri.parse('$apiUrl'));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
@@ -861,7 +861,7 @@ class ApiServices {
       );
 
       if (response.statusCode == 200) {
-        print('ok');
+        print('ok: ${response.body}');
       } else {
         print('false');
       }
@@ -981,7 +981,6 @@ class ApiServices {
       );
 
       if (response.statusCode == 200) {
-        print('get code ok');
         return MyVoucher.fromJson(json.decode(response.body));
       } else {
         throw Exception('Error code id ');
@@ -993,7 +992,7 @@ class ApiServices {
 
   Future<List<NotificationReceiver>> getNotification() async {
     final url = Uri.parse(
-        'https://api.vouchee.shop/api/v1/notification/get_receiver_notifications');
+        'https://api.vouchee.shop/api/v1/notification/get_receiver_notifications?pageSize=50');
 
     try {
       final headers = {
@@ -1041,6 +1040,41 @@ class ApiServices {
       }
     } catch (e) {
       throw Exception("Error fetching order data: $e");
+    }
+  }
+
+  Future<void> refund(String image, String voucherCodeId, String content,
+      int lon, int lat) async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/refundRequest/create_refund_request';
+    final url = Uri.parse(apiUrl);
+
+    // Prepare the request body
+    final body = {
+      image: 'image',
+      voucherCodeId: 'voucherCodeId',
+      content: 'content',
+      lon: 'lon',
+      lat: 'lat'
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $auth',
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        print("refund ok");
+      } else {
+        print("refund fail");
+      }
+    } catch (e) {
+      throw ("Error during API call: $e");
     }
   }
 }

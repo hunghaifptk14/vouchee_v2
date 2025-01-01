@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/assets/app_vector.dart';
 
 import 'package:vouchee/core/configs/theme/app_color.dart';
@@ -33,6 +34,15 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
     futureModal = apiService.fetchModal(); // Fetch data on init
   }
 
+  String _currencyFormat(double amount) {
+    String format = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: '₫',
+      decimalDigits: 0, // No decimal digits
+    ).format(amount);
+    return format;
+  }
+
   Future<void> _addToCart(String modalId) async {
     bool success = await cartService.addToCart(modalId);
     if (success) {
@@ -47,7 +57,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: Text('modals detail'),
+          title: Text('Thông tin voucher'),
           actions: <Widget>[
             IconButton(
               onPressed: () {
@@ -84,11 +94,8 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                       : Placeholder(fallbackHeight: 250, fallbackWidth: 100),
                 ),
               ),
-              const SizedBox(
-                height: 8,
-              ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -103,7 +110,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                       height: 8,
                     ),
                     Text(
-                      '${widget.modal.sellPrice.toInt()} đ',
+                      _currencyFormat(widget.modal.sellPrice),
                       style: const TextStyle(
                           fontSize: 16,
                           color: Colors.green,
@@ -163,41 +170,39 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          OutlinedButton(
-                              onPressed: () {
-                                _addToCart(widget.modal.id);
-                              },
-                              style: OutlinedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
-                                  side: const BorderSide(
-                                    width: 2.0,
-                                    color: AppColor.primary,
+                          widget.modal.stock.toInt() == 0
+                              ? ElevatedButton(
+                                  onPressed: null,
+                                  child: Text(
+                                    'Thêm vào giỏ',
+                                    style: TextStyle(
+                                        color: AppColor.secondary,
+                                        fontSize: 14),
+                                  ),
+                                )
+                              : OutlinedButton(
+                                  onPressed: () {
+                                    _addToCart(widget.modal.id);
+                                    print(widget.modal.stock.toInt());
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14)),
+                                      side: const BorderSide(
+                                        width: 2.0,
+                                        color: AppColor.primary,
+                                      )),
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 8),
+                                    child: Text(
+                                      'Thêm vào giỏ',
+                                      style: TextStyle(
+                                          color: AppColor.secondary,
+                                          fontSize: 14),
+                                    ),
                                   )),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 8),
-                                child: Text(
-                                  'Thêm vào giỏ',
-                                  style: TextStyle(
-                                      color: AppColor.secondary, fontSize: 14),
-                                ),
-                              )),
-                          // ElevatedButton(
-                          //   onPressed: () {
-                          //     // Provider.of<CartProvider>(context, listen: false)
-                          //     //     .addToCart(widget.voucher);
-                          //   },
-                          //   child: Padding(
-                          //     padding: EdgeInsets.symmetric(
-                          //         vertical: 8, horizontal: 16),
-                          //     child: Text(
-                          //       'Mua ngay',
-                          //       style: TextStyle(
-                          //           color: AppColor.white, fontSize: 14),
-                          //     ),
-                          //   ),
-                          // )
                         ],
                       ),
                     ),
