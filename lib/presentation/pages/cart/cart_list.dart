@@ -46,26 +46,26 @@ class CartScreenState extends State<CartPage> {
       } else {
         // Remove modalId from selected list
         selectedModalIds[sellerId]?.remove(modal.id);
-        print('selectedModalIds: $selectedModalIds');
       }
 
       // Create or update ItemBrief with the selected modals
       if (selectedModalIds[sellerId] != null &&
-          selectedModalIds[sellerId]!.isNotEmpty &&
-          _appliedPromotions[sellerId] != null) {
-        String promotionId = _appliedPromotions[sellerId]!;
+          selectedModalIds[sellerId]!.isNotEmpty) {
+        // Get promotionId or default to an empty string if not available
+        String promotionId = _appliedPromotions[sellerId] ?? "";
         ItemBrief itemBrief = ItemBrief(
           modalId: selectedModalIds[sellerId]!.toList(),
           promotionId: promotionId,
           sellerId: sellerId,
         );
+
         // Add or update the ItemBrief list
         itemBriefList.removeWhere((item) =>
             item.sellerId == sellerId); // Remove existing brief for that seller
         itemBriefList.add(itemBrief);
-        print('_appliedPromotions: $selectedPromoID');
+        print('_appliedPromotions: $promotionId');
       } else {
-        // If no modals selected or no promotion selected, remove corresponding ItemBrief
+        // If no modals selected, remove corresponding ItemBrief
         itemBriefList.removeWhere((item) => item.sellerId == sellerId);
       }
 

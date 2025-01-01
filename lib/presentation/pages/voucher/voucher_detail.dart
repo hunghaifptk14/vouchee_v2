@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:intl/intl.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/voucher/modal_list.dart';

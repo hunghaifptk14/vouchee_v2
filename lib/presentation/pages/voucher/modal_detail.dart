@@ -46,9 +46,11 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
   Future<void> _addToCart(String modalId) async {
     bool success = await cartService.addToCart(modalId);
     if (success) {
-      TopSnackbar.show(context, 'Đã thêm sản phẩm vào giỏ hàng');
+      TopSnackbar.show(context, 'Đã thêm sản phẩm vào giỏ hàng',
+          backgroundColor: AppColor.success);
     } else {
-      TopSnackbar.show(context, 'Không thêm được sản phẩm');
+      TopSnackbar.show(context, 'Không thêm được sản phẩm',
+          backgroundColor: AppColor.warning);
     }
   }
 

@@ -292,7 +292,7 @@ class ApiServices {
   Future<AppUser> getUserInfo() async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/auth/login_with_google_token?token=';
-    final response = await http.get(Uri.parse('$apiUrl'));
+    final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);

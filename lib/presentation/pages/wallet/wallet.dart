@@ -6,7 +6,6 @@ import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/transactions.dart';
-import 'package:vouchee/model/user.dart';
 import 'package:vouchee/model/wallet.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';

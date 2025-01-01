@@ -111,7 +111,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
           // List<MyVoucher> filteredVouchers = [];
           // for (var voucher in myVoucher) {
           //   var filteredVoucherCodes = voucher.voucherCodes
-          //       .where((voucherCode) => voucherCode.status == status)
+          //       .where((voucherCode) => voucherCode.status == status)com
           //       .toList();
 
           //   if (filteredVoucherCodes.isNotEmpty) {
