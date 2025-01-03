@@ -1,8 +1,11 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:vouchee/core/configs/theme/app_color.dart';
 
 import 'package:vouchee/model/rating.dart';
 import 'package:vouchee/networking/api_request.dart';
+import 'package:vouchee/presentation/pages/purchased/Purchased_voucher.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class RatingVoucherPage extends StatefulWidget {
   final String orderId;
@@ -25,7 +28,7 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
   String comment = '';
   final TextEditingController commentController = TextEditingController();
 
-  void _submitRating() async {
+  Future<void> _submitRating() async {
     print(widget.modalId);
     print(widget.orderId);
     // Collect data for submission
@@ -43,13 +46,12 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
     bool success = await apiServices.updateRating(rating);
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Rating submitted successfully!")),
-      );
+      print('object');
+      TopSnackbar.show(context, 'Tạo rating thành công',
+          backgroundColor: AppColor.success);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to submit rating. Please try again.")),
-      );
+      TopSnackbar.show(context, 'Lỗi khi đánh giá',
+          backgroundColor: AppColor.warning);
     }
   }
 
@@ -78,7 +80,7 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Rate the Order"),
+        title: Text("Đánh giá voucher"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -86,20 +88,20 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildStarRating("Quality Rating", qualityStar, (rating) {
+              _buildStarRating("Chất lượng voucher", qualityStar, (rating) {
                 setState(() => qualityStar = rating);
               }),
-              _buildStarRating("Service Rating", serviceStar, (rating) {
+              _buildStarRating("Dịch vụ", serviceStar, (rating) {
                 setState(() => serviceStar = rating);
               }),
-              _buildStarRating("Seller Rating", sellerStar, (rating) {
+              _buildStarRating("Đánh giá người bán", sellerStar, (rating) {
                 setState(() => sellerStar = rating);
               }),
               TextField(
                 controller: commentController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  labelText: "Comment",
+                  labelText: "Nhận xét của bạn",
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
@@ -110,8 +112,15 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _submitRating,
-                child: Text("Submit Rating"),
+                onPressed: () async {
+                  await _submitRating;
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              const PurchedVoucher()));
+                },
+                child: Text("Hoàn tất"),
               ),
             ],
           ),

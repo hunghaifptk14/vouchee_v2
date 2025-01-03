@@ -736,7 +736,7 @@ class ApiServices {
 
   Future<List<MyVoucher>?> fetchMyUnuseVoucher() async {
     final String apiUrl =
-        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers?status=1';
+        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers';
 
     try {
       final response = await http.get(
@@ -790,7 +790,7 @@ class ApiServices {
 
   Future<List<MyVoucher>?> fetchMyPendingVoucher() async {
     final String apiUrl =
-        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers?status=0';
+        'https://api.vouchee.shop/api/v1/myVoucher/get_my_vouchers';
 
     try {
       final response = await http.get(

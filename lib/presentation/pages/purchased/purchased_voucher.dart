@@ -8,6 +8,7 @@ import 'package:vouchee/model/message.dart';
 import 'package:vouchee/model/my_voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/purchased/rating.dart';
+import 'package:vouchee/presentation/pages/purchased/refund.dart';
 import 'package:vouchee/presentation/widgets/bottomNav/bottom_app_bar.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
@@ -108,24 +109,22 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
           return Center(child: Text('Bạn chưa có voucher nào'));
         } else {
           List<MyVoucher> myVoucher = snapshot.data!;
-          // List<MyVoucher> filteredVouchers = [];
-          // for (var voucher in myVoucher) {
-          //   var filteredVoucherCodes = voucher.voucherCodes
-          //       .where((voucherCode) => voucherCode.status == status)com
-          //       .toList();
+          List<MyVoucher> filteredVouchers = myVoucher.where((voucher) {
+            return voucher.voucherCodes.any((voucherCode) {
+              return voucherCode.status == 'UNUSED';
+            });
+          }).toList();
 
-          //   if (filteredVoucherCodes.isNotEmpty) {
-          //     filteredVouchers.add(voucher);
-          //     print(filteredVoucherCodes);
-          //   }
-          // }
-
+          // Check if there are any filtered vouchers
+          if (filteredVouchers.isEmpty) {
+            return Center(child: Text('Bạn chưa có voucher nào'));
+          }
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: ListView.builder(
-              itemCount: myVoucher.length,
+              itemCount: filteredVouchers.length,
               itemBuilder: (context, index) {
-                final myvoucher = myVoucher[index];
+                final myvoucher = filteredVouchers[index];
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -167,233 +166,287 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                           child: Column(
                             children: [
                               ...myvoucher.voucherCodes
-                                  .map((voucherCodes) => Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text(
-                                                'Hết hạn:',
-                                                style: TextStyle(
-                                                    color: AppColor.lightGrey,
-                                                    fontSize: 12),
-                                              ),
-                                              compareDate(voucherCodes
-                                                          .endDate) ==
-                                                      true
-                                                  ? Text(
-                                                      ' ${voucherCodes.endDate}',
-                                                      style: TextStyle(
-                                                          color:
-                                                              AppColor.warning))
-                                                  : Text(
-                                                      ' ${voucherCodes.endDate}',
-                                                      style: TextStyle(
-                                                          color:
-                                                              AppColor.success),
-                                                    ),
-                                            ],
-                                          ),
-                                          compareDate(voucherCodes.endDate) ==
-                                                  false
-                                              ? ElevatedButton(
-                                                  onPressed: () {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                            context) {
-                                                          return Center(
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          16),
-                                                              child: Container(
-                                                                decoration: BoxDecoration(
-                                                                    color: AppColor
-                                                                        .white,
-                                                                    borderRadius:
-                                                                        BorderRadius.all(
-                                                                            Radius.circular(15))),
-                                                                height: 215,
-                                                                // width: 300,
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .all(
-                                                                          16.0),
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding:
-                                                                            EdgeInsets.symmetric(vertical: 0),
+                                  .map((voucherCodes) => Container(
+                                        child: voucherCodes.status == 'UNUSED'
+                                            ? Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        'Hết hạn:',
+                                                        style: TextStyle(
+                                                            color: AppColor
+                                                                .lightGrey,
+                                                            fontSize: 12),
+                                                      ),
+                                                      compareDate(voucherCodes
+                                                                  .endDate) ==
+                                                              true
+                                                          ? Text(
+                                                              ' ${voucherCodes.endDate}',
+                                                              style: TextStyle(
+                                                                  color: AppColor
+                                                                      .warning))
+                                                          : Text(
+                                                              ' ${voucherCodes.endDate}',
+                                                              style: TextStyle(
+                                                                  color: AppColor
+                                                                      .success),
+                                                            ),
+                                                    ],
+                                                  ),
+                                                  compareDate(voucherCodes
+                                                              .endDate) ==
+                                                          false
+                                                      ? ElevatedButton(
+                                                          onPressed: () {
+                                                            showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (BuildContext
+                                                                        context) {
+                                                                  return Center(
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              16),
+                                                                      child:
+                                                                          Container(
+                                                                        decoration: BoxDecoration(
+                                                                            color:
+                                                                                AppColor.white,
+                                                                            borderRadius: BorderRadius.all(Radius.circular(15))),
+                                                                        height:
+                                                                            215,
+                                                                        // width: 300,
                                                                         child:
-                                                                            Row(
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.warning_amber_rounded,
-                                                                              color: AppColor.warning,
-                                                                            ),
-                                                                            SizedBox(
-                                                                              width: 4,
-                                                                            ),
-                                                                            Text(
-                                                                              'Lưu ý quan trọng',
-                                                                              style: TextStyle(color: AppColor.warning, fontSize: 16, fontWeight: FontWeight.w600),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      Padding(
-                                                                        padding:
-                                                                            EdgeInsets.symmetric(vertical: 16),
-                                                                        child:
-                                                                            Column(
-                                                                          children: [
-                                                                            RichText(
-                                                                                text: TextSpan(style: TextStyle(fontSize: 14, color: Colors.black), children: [
-                                                                              TextSpan(text: '- Sau khi lấy voucher code bạn có '),
-                                                                              TextSpan(text: '10 phút ', style: TextStyle(color: Colors.green)),
-                                                                              TextSpan(text: 'để quét mã.'),
-                                                                            ])),
-                                                                            SizedBox(
-                                                                              height: 4,
-                                                                            ),
-                                                                            RichText(
-                                                                                text: TextSpan(style: TextStyle(fontSize: 14, color: Colors.black), children: [
-                                                                              TextSpan(text: '- Hết 10 phút voucher sẽ được cập nhật là "'),
-                                                                              TextSpan(text: 'Đã sử dụng', style: TextStyle(color: Colors.green)),
-                                                                              TextSpan(text: '" và không thể hoàn tác.'),
-                                                                            ])),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceBetween,
-                                                                        children: [
-                                                                          Expanded(
-                                                                            child:
-                                                                                Opacity(
-                                                                              opacity: 0.5,
-                                                                              child: ElevatedButton(
-                                                                                onPressed: () {
-                                                                                  Navigator.of(context).pop();
-                                                                                },
-                                                                                style: ElevatedButton.styleFrom(backgroundColor: AppColor.lightGrey),
-                                                                                child: Text(
-                                                                                  'Hủy',
-                                                                                  style: TextStyle(color: AppColor.white),
+                                                                            Padding(
+                                                                          padding: const EdgeInsets
+                                                                              .all(
+                                                                              16.0),
+                                                                          child:
+                                                                              Column(
+                                                                            children: [
+                                                                              Padding(
+                                                                                padding: EdgeInsets.symmetric(vertical: 0),
+                                                                                child: Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                                  children: [
+                                                                                    Icon(
+                                                                                      Icons.warning_amber_rounded,
+                                                                                      color: AppColor.warning,
+                                                                                    ),
+                                                                                    SizedBox(
+                                                                                      width: 4,
+                                                                                    ),
+                                                                                    Text(
+                                                                                      'Lưu ý quan trọng',
+                                                                                      style: TextStyle(color: AppColor.warning, fontSize: 16, fontWeight: FontWeight.w600),
+                                                                                    ),
+                                                                                  ],
                                                                                 ),
                                                                               ),
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                            width:
-                                                                                8,
-                                                                          ),
-                                                                          Expanded(
-                                                                              child: ElevatedButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return Column(
-                                                                                      children: [
-                                                                                        Center(
-                                                                                            child: Padding(
-                                                                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                                                          child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network(voucherCodes.image!)),
-                                                                                          //Test
-                                                                                          // child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network('https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg')),
-                                                                                        )),
-                                                                                        ElevatedButton(
-                                                                                          onPressed: () async {
-                                                                                            final path = '${Directory.systemTemp.path}/refund-image.jpg';
-                                                                                            await Dio().download(
-                                                                                              voucherCodes.image.toString(),
-                                                                                              path,
+                                                                              Padding(
+                                                                                padding: EdgeInsets.symmetric(vertical: 16),
+                                                                                child: Column(
+                                                                                  children: [
+                                                                                    RichText(
+                                                                                        text: TextSpan(style: TextStyle(fontSize: 14, color: Colors.black), children: [
+                                                                                      TextSpan(text: '- Sau khi lấy voucher code bạn có '),
+                                                                                      TextSpan(text: '10 phút ', style: TextStyle(color: Colors.green)),
+                                                                                      TextSpan(text: 'để quét mã.'),
+                                                                                    ])),
+                                                                                    SizedBox(
+                                                                                      height: 4,
+                                                                                    ),
+                                                                                    RichText(
+                                                                                        text: TextSpan(style: TextStyle(fontSize: 14, color: Colors.black), children: [
+                                                                                      TextSpan(text: '- Hết 10 phút voucher sẽ được cập nhật là "'),
+                                                                                      TextSpan(text: 'Đã sử dụng', style: TextStyle(color: Colors.green)),
+                                                                                      TextSpan(text: '" và không thể hoàn tác.'),
+                                                                                    ])),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                              Row(
+                                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                children: [
+                                                                                  Expanded(
+                                                                                    child: Opacity(
+                                                                                      opacity: 0.5,
+                                                                                      child: ElevatedButton(
+                                                                                        onPressed: () {
+                                                                                          Navigator.of(context).pop();
+                                                                                        },
+                                                                                        style: ElevatedButton.styleFrom(backgroundColor: AppColor.lightGrey),
+                                                                                        child: Text(
+                                                                                          'Hủy',
+                                                                                          style: TextStyle(color: AppColor.white),
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  SizedBox(
+                                                                                    width: 8,
+                                                                                  ),
+                                                                                  Expanded(
+                                                                                      child: ElevatedButton(
+                                                                                    onPressed: () {
+                                                                                      showDialog(
+                                                                                          context: context,
+                                                                                          builder: (BuildContext context) {
+                                                                                            return Center(
+                                                                                              child: Column(
+                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                children: [
+                                                                                                  Center(
+                                                                                                      child: Padding(
+                                                                                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                                                                    child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network(voucherCodes.image!)),
+                                                                                                    //Test
+                                                                                                    // child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network('https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg')),
+                                                                                                  )),
+                                                                                                  Center(
+                                                                                                    child: SizedBox(
+                                                                                                      width: 300,
+                                                                                                      child: Row(
+                                                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                                        children: [
+                                                                                                          ElevatedButton(
+                                                                                                            onPressed: () async {
+                                                                                                              final path = '${Directory.systemTemp.path}/refund-image.jpg';
+                                                                                                              await Dio().download(
+                                                                                                                voucherCodes.image.toString(),
+                                                                                                                path,
+                                                                                                              );
+                                                                                                              //Test
+                                                                                                              // await Dio().download(
+                                                                                                              //   'https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg',
+                                                                                                              //   path,
+                                                                                                              // );
+                                                                                                              await Gal.putImage(path);
+                                                                                                              TopSnackbar.show(context, 'Đã tải ảnh');
+                                                                                                            },
+                                                                                                            child: SizedBox(
+                                                                                                              width: 100,
+                                                                                                              child: Row(
+                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                                children: [
+                                                                                                                  Icon(
+                                                                                                                    Icons.download_outlined,
+                                                                                                                    color: AppColor.white,
+                                                                                                                  ),
+                                                                                                                  SizedBox(
+                                                                                                                    width: 8,
+                                                                                                                  ),
+                                                                                                                  Text(
+                                                                                                                    'Tải ảnh',
+                                                                                                                    style: TextStyle(
+                                                                                                                      color: AppColor.white,
+                                                                                                                      fontSize: 11,
+                                                                                                                    ),
+                                                                                                                  ),
+                                                                                                                ],
+                                                                                                              ),
+                                                                                                            ),
+                                                                                                          ),
+                                                                                                          ElevatedButton(
+                                                                                                            style: ButtonStyle(
+                                                                                                              backgroundColor: MaterialStateProperty.all(AppColor.warning), // Set the color of the button
+                                                                                                            ),
+                                                                                                            onPressed: () {
+                                                                                                              Navigator.push(
+                                                                                                                  context,
+                                                                                                                  MaterialPageRoute(
+                                                                                                                      builder: (BuildContext context) => RefundPage(
+                                                                                                                            voucherCodeId: voucherCodes.id.toString(),
+                                                                                                                          )));
+                                                                                                            },
+                                                                                                            child: SizedBox(
+                                                                                                              width: 100,
+                                                                                                              child: Row(
+                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                                children: [
+                                                                                                                  Icon(
+                                                                                                                    Icons.download_outlined,
+                                                                                                                    color: AppColor.white,
+                                                                                                                  ),
+                                                                                                                  SizedBox(
+                                                                                                                    width: 8,
+                                                                                                                  ),
+                                                                                                                  Text(
+                                                                                                                    'Báo lỗi',
+                                                                                                                    style: TextStyle(
+                                                                                                                      color: AppColor.white,
+                                                                                                                      fontSize: 11,
+                                                                                                                    ),
+                                                                                                                  ),
+                                                                                                                ],
+                                                                                                              ),
+                                                                                                            ),
+                                                                                                          )
+                                                                                                        ],
+                                                                                                      ),
+                                                                                                    ),
+                                                                                                  )
+                                                                                                ],
+                                                                                              ),
                                                                                             );
-                                                                                            //Test
-                                                                                            // await Dio().download(
-                                                                                            //   'https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg',
-                                                                                            //   path,
-                                                                                            // );
-                                                                                            await Gal.putImage(path);
-                                                                                            TopSnackbar.show(context, 'Đã tải ảnh');
-                                                                                          },
-                                                                                          child: SizedBox(
-                                                                                            width: 100,
-                                                                                            child: Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.center,
-                                                                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                              children: [
-                                                                                                Icon(
-                                                                                                  Icons.download_outlined,
-                                                                                                  color: AppColor.white,
-                                                                                                ),
-                                                                                                SizedBox(
-                                                                                                  width: 8,
-                                                                                                ),
-                                                                                                Text(
-                                                                                                  'Tải ảnh',
-                                                                                                  style: TextStyle(
-                                                                                                    color: AppColor.white,
-                                                                                                    fontSize: 11,
-                                                                                                  ),
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ),
-                                                                                        )
-                                                                                      ],
-                                                                                    );
-                                                                                  });
-                                                                              // apiServices.updateVoucherCodeStatus(voucherCodes.id);
-                                                                              // updateCode(voucherCodes.status);
-                                                                              apiServices.getVoucherCodeById(voucherCodes.id);
-                                                                            },
-                                                                            child:
-                                                                                Text('Lấy mã', style: TextStyle(color: AppColor.white)),
-                                                                          )),
-                                                                        ],
-                                                                      )
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        });
-                                                    Future.delayed(
-                                                        Duration(minutes: 1),
-                                                        () {
-                                                      Navigator.of(context,
-                                                              rootNavigator:
-                                                                  true)
-                                                          .pop(); // Close the dialog after 5 minutes
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    'Sử dụng voucher',
-                                                    style: TextStyle(
-                                                        color: AppColor.white),
-                                                  ),
-                                                )
-                                              : ElevatedButton(
-                                                  onPressed: null,
-                                                  child: Text(
-                                                    'Voucher hết hạn ',
-                                                    style: TextStyle(
-                                                        color: AppColor.white),
-                                                  ),
-                                                ),
-                                        ],
+                                                                                          });
+                                                                                      // apiServices.updateVoucherCodeStatus(voucherCodes.id);
+                                                                                      // updateCode(voucherCodes.status);
+                                                                                      // apiServices.getVoucherCodeById(voucherCodes.id);
+                                                                                    },
+                                                                                    child: Text('Lấy mã', style: TextStyle(color: AppColor.white)),
+                                                                                  )),
+                                                                                ],
+                                                                              )
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                });
+                                                            // Future.delayed(
+                                                            //     Duration(
+                                                            //         minutes: 5),
+                                                            //     () {
+                                                            //   Navigator.of(
+                                                            //           context,
+                                                            //           rootNavigator:
+                                                            //               true)
+                                                            //       .pop(); // Close the dialog after 5 minutes
+                                                            // });
+                                                          },
+                                                          child: Text(
+                                                            'Sử dụng voucher',
+                                                            style: TextStyle(
+                                                                color: AppColor
+                                                                    .white),
+                                                          ),
+                                                        )
+                                                      : ElevatedButton(
+                                                          onPressed: null,
+                                                          child: Text(
+                                                            'Voucher hết hạn',
+                                                            style: TextStyle(
+                                                                color: AppColor
+                                                                    .white),
+                                                          ),
+                                                        ),
+                                                ],
+                                              )
+                                            : Container(),
                                       )),
                             ],
                           ),
@@ -534,13 +587,24 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
           return Center(child: Text('Bạn chưa có voucher nào'));
         } else {
           List<MyVoucher> myVoucher = snapshot.data!;
+          List<MyVoucher> filteredVouchers = myVoucher.where((voucher) {
+            return voucher.voucherCodes.any((voucherCode) {
+              return voucherCode.status == 'SUSPECTED' ||
+                  voucherCode.status == 'PENDING';
+            });
+          }).toList();
 
+          // Check if there are any filtered vouchers
+          if (filteredVouchers.isEmpty) {
+            return Center(
+                child: Text('Không có voucher đang chờ hoặc nghi ngờ'));
+          }
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: ListView.builder(
-              itemCount: myVoucher.length,
+              itemCount: filteredVouchers.length,
               itemBuilder: (context, index) {
-                final myvoucher = myVoucher[index];
+                final myvoucher = filteredVouchers[index];
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -550,24 +614,17 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(7),
-                            child: Image.network(
-                              myvoucher.image,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          title: Text(myvoucher.title),
-                          subtitle: Row(
-                            children: [
-                              Text(
-                                'Số lượng: ',
-                                style: TextStyle(
-                                    color: AppColor.lightGrey, fontSize: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: ListTile(
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(7),
+                              child: Image.network(
+                                myvoucher.image,
+                                fit: BoxFit.cover,
                               ),
-                              Text('${myvoucher.voucherCodeCount}')
-                            ],
+                            ),
+                            title: Text(myvoucher.title),
                           ),
                         ),
                         Padding(
@@ -578,27 +635,28 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(16.0),
                           child: Column(
                             children: [
-                              ...myvoucher.voucherCodes
-                                  .map((voucherCodes) => Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text(
-                                                'Hết hạn:',
-                                                style: TextStyle(
-                                                    color: AppColor.lightGrey,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(' ${voucherCodes.endDate}'),
-                                            ],
-                                          ),
-                                        ],
-                                      )),
+                              // ...myvoucher.voucherCodes
+                              //     .map((voucherCodes) => Row(
+                              //           mainAxisAlignment:
+                              //               MainAxisAlignment.spaceBetween,
+                              //           children: [
+                              //             Row(
+                              //               children: [
+                              //                 Text(
+                              //                   'Hết hạn:',
+                              //                   style: TextStyle(
+                              //                       color: AppColor.lightGrey,
+                              //                       fontSize: 12),
+                              //                 ),
+                              //                 Text(' ${voucherCodes.endDate}'),
+                              //               ],
+                              //             ),
+                              //           ],
+                              //         )),
+                              Text('Voucher của bạn đang được xử lí.')
                             ],
                           ),
                         ),

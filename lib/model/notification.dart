@@ -3,8 +3,8 @@ class NotificationReceiver {
   final bool seen;
   final String receiverName;
   final String receiverImage;
-  final String senderName;
-  final String senderImage;
+  final String? senderName; // Nullable
+  final String? senderImage; // Nullable
   final DateTime createDate;
   final String receiverId;
   final String title;
@@ -15,31 +15,34 @@ class NotificationReceiver {
     required this.seen,
     required this.receiverName,
     required this.receiverImage,
-    required this.senderName,
-    required this.senderImage,
+    this.senderName, // Nullable
+    this.senderImage, // Nullable
     required this.createDate,
     required this.receiverId,
     required this.title,
     required this.body,
   });
 
-  // Factory method to create an instance from JSON
+  // Factory constructor to create NotificationReceiver from JSON
   factory NotificationReceiver.fromJson(Map<String, dynamic> json) {
     return NotificationReceiver(
-      id: json['id'],
-      seen: json['seen'],
-      receiverName: json['receiverName'],
-      receiverImage: json['receiverImage'] ?? '',
-      senderName: json['senderName'],
-      senderImage: json['senderImage'],
-      createDate: DateTime.parse(json['createDate']),
-      receiverId: json['receiverId'],
-      title: json['title'],
-      body: json['body'],
+      id: json['id'] ?? '', // Default to empty string if null
+      seen: json['seen'] ?? false, // Default to false if null
+      receiverName:
+          json['receiverName'] ?? '', // Default to empty string if null
+      receiverImage:
+          json['receiverImage'] ?? '', // Default to empty string if null
+      senderName: json['senderName'], // Nullable
+      senderImage: json['senderImage'], // Nullable
+      createDate: DateTime.parse(json['createDate'] ??
+          DateTime.now().toString()), // Default to current time if null
+      receiverId: json['receiverId'] ?? '', // Default to empty string if null
+      title: json['title'] ?? '', // Default to empty string if null
+      body: json['body'] ?? '', // Default to empty string if null
     );
   }
 
-  // Method to convert an instance to JSON
+  // Method to convert NotificationReceiver object back to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,

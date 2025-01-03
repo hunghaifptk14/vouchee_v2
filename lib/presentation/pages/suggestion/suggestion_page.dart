@@ -79,16 +79,14 @@ class _SuggestionPageState extends State<SuggestionPage> {
 
   Future<List<NearVoucher>> _fetchVouchersBasedOnLocation() async {
     try {
-      print("Fetching user location...");
       Position? position = await getUserLocation(context);
 
       if (position == null) {
         throw Exception("Unable to get user location.");
       }
 
-      print("Location fetched: (${position.latitude}, ${position.longitude})");
+      // print("Location fetched: (${position.latitude}, ${position.longitude})");
 
-      print("Fetching vouchers...");
       return await apiService.fetchNearVouchers(
         lat: position.latitude,
         lon: position.longitude,
@@ -121,7 +119,7 @@ class _SuggestionPageState extends State<SuggestionPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Lỗi: ${snapshot.error}',
+                    '${snapshot.error}',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.red),
                   ),
@@ -132,7 +130,10 @@ class _SuggestionPageState extends State<SuggestionPage> {
                         futureNearVouchers = _fetchVouchersBasedOnLocation();
                       });
                     },
-                    child: Text('Thử lại'),
+                    child: Text(
+                      'Thử lại',
+                      style: TextStyle(color: AppColor.white),
+                    ),
                   ),
                 ],
               ),
