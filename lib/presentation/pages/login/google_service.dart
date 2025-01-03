@@ -9,25 +9,7 @@ class GoogleSignInService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ApiServices postToken = ApiServices();
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-  // Future<GoogleSignInAccount?> signInWithGoogle() async {
-  //   try {
-  //     GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-  //     if (googleUser == null) {
-  //       return null; // If the user cancels the login
-  //     }
-  //     GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-  //     AuthCredential credential = GoogleAuthProvider.credential(
-  //         accessToken: googleAuth?.accessToken, idToken: googleAuth?.idToken);
-  //     UserCredential userCredential =
-  //         await FirebaseAuth.instance.signInWithCredential(credential);
-  //     print(userCredential.user?.displayName);
-  //     return googleUser;
-  //   } catch (e) {
-  //     print(e);
-  //     return null;
-  //   }
-  // }
+  final ApiServices apiServices = ApiServices();
   Future<User?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -50,7 +32,6 @@ class GoogleSignInService {
       String? idToken = await userCredential.user?.getIdToken();
       log(idToken!);
       await _postToken(idToken);
-
       return userCredential.user;
     } catch (e) {
       print(e);
@@ -59,8 +40,7 @@ class GoogleSignInService {
   }
 
   Future<void> _postToken(String accessToken) async {
-    final ApiServices postToken = ApiServices();
-    await postToken.postToken(accessToken);
+    await apiServices.postToken(accessToken);
   }
 
   Future<void> signOut() async {

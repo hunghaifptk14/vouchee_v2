@@ -10,50 +10,49 @@ import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/checkout.dart';
 import 'package:vouchee/model/item_brief.dart';
+import 'package:vouchee/model/user.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
+import 'package:vouchee/presentation/pages/wallet/wallet.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
-class CheckoutPageTest extends StatefulWidget {
+class CheckoutPage extends StatefulWidget {
   final List<ItemBrief> selectedItems;
-  final int useVpoint;
-  final int useBalance;
-  final String giftEmail;
-
-  const CheckoutPageTest({
-    super.key,
+  const CheckoutPage({
+    Key? key,
     required this.selectedItems,
-    required this.useVpoint,
-    required this.useBalance,
-    required this.giftEmail,
-  });
+  }) : super(key: key);
 
   @override
   _CheckoutPageState createState() => _CheckoutPageState();
 }
 
-class _CheckoutPageState extends State<CheckoutPageTest> {
+class _CheckoutPageState extends State<CheckoutPage> {
   late Future<Checkout?> futureCheckout;
+  late Future<AppUser> futureGetUser;
   List<Checkout>? checkout;
   ApiServices apiServices = ApiServices();
   String? getOrderIDString;
+  Map<int, bool> activeStates = {0: false, 1: false};
+  bool isButtonActive = false;
+  bool isLoading = false;
+  String getEmail = '';
+  int getUseVpoint = 0;
+  int getUseBalance = 0;
 
   @override
   void initState() {
     super.initState();
+    futureGetUser = apiServices.getCurrentUser();
     futureCheckout = apiServices.checkoutCart(
-        items: widget.selectedItems,
-        useBalance: widget.useBalance,
-        useVpoint: widget.useVpoint,
-        giftEmail: widget.giftEmail);
+      items: widget.selectedItems,
+    );
   }
 
   void loadData() {
     futureCheckout = apiServices.checkoutCart(
-        items: widget.selectedItems,
-        useBalance: widget.useBalance,
-        useVpoint: widget.useVpoint,
-        giftEmail: widget.giftEmail);
+      items: widget.selectedItems,
+    );
   }
 
   @override
@@ -63,36 +62,32 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
     super.dispose();
   }
 
-  bool isActive = false;
+  String _currencyFormat(double amount) {
+    String format = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: '₫',
+      decimalDigits: 0, // No decimal digits
+    ).format(amount);
+    return format;
+  }
+
+  void toggleActiveState(int index) {
+    setState(() {
+      // Set all other options to false and toggle the selected one
+      activeStates.updateAll((key, value) => false);
+      activeStates[index] = !activeStates[index]!;
+
+      // Update the button state: active if any option is true
+      isButtonActive = activeStates.containsValue(true);
+    });
+  }
 
   String status = '';
   Timer? _timer;
   Timer? _cancelTimer;
   int _elapsedTime = 0;
   bool _timerStarted = false;
-  // String _orderStatusRequest() {
-  //   setState(() {
-  //     _timerStarted = true;
-  //   });
-  //   _timer = Timer.periodic(Duration(seconds: 2), (timer) async {
-  //     status = await apiServices.getOrderStatus();
-  //     _elapsedTime += 2; // Increment elapsed time by 2 seconds
 
-  //     if (status == 'PAID') {
-  //       _timer.cancel();
-  //       _cancelTimer.cancel();
-  //       TopSnackbar.show(context, 'Thanh toán thành công');
-  //       Navigator.push(context,
-  //           MaterialPageRoute(builder: (BuildContext context) => HomePage()));
-  //     } else {
-  //       _cancelTimer = Timer(Duration(minutes: 2), () {
-  //         _timer.cancel(); // Cancel the periodic timer after 2 minutes
-  //       });
-  //     }
-  //   });
-
-  //   return status;
-  // }
   void _orderStatusRequest() {
     if (_timerStarted) return; // Prevent multiple timer instances
 
@@ -135,26 +130,36 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
         _timer?.cancel();
         _cancelTimer?.cancel();
 
-        TopSnackbar.show(context, 'không tạo được đơn hàn');
+        TopSnackbar.show(context, 'không tạo được đơn hàng',
+            backgroundColor: AppColor.warning);
       }
     });
   }
 
   Future<void> _orderRequest() async {
+    setState(() {
+      isLoading = true;
+    });
     await apiServices.createOrder(
         items: widget.selectedItems,
-        useBalance: widget.useBalance,
-        useVpoint: widget.useVpoint,
-        giftEmail: widget.giftEmail);
+        useBalance: getUseBalance,
+        useVpoint: getUseVpoint,
+        giftEmail: getEmail);
     String? getOrderID() {
       return getOrderIDString = apiServices.getOrderID();
     }
 
     getOrderID();
     if (getOrderIDString == null) {
+      setState(() {
+        isLoading = false;
+      });
       TopSnackbar.show(context, 'Tạo đơn hàng thất bại',
           backgroundColor: AppColor.warning);
     } else {
+      setState(() {
+        isLoading = false;
+      });
       TopSnackbar.show(context, 'Tạo đơn hàng thành công',
           backgroundColor: AppColor.success);
     }
@@ -162,13 +167,26 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
     print(widget.selectedItems);
   }
 
-  String _currencyFormat(double amount) {
-    String format = NumberFormat.currency(
-      locale: 'vi_VN',
-      symbol: '₫',
-      decimalDigits: 0, // No decimal digits
-    ).format(amount);
-    return format;
+  void handleUseBalance(int useBalance) {
+    setState(() {
+      getUseBalance = useBalance;
+    });
+  }
+
+  void getEmailString(String query) {
+    bool isValidEmail(String query) {
+      // Regular expression for validating email format
+      final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+      return regex.hasMatch(query);
+    }
+
+    if (isValidEmail(query)) {
+      setState(() {
+        getEmail == query;
+      });
+    } else {
+      TopSnackbar.show(context, 'message', backgroundColor: AppColor.warning);
+    }
   }
 
   @override
@@ -188,6 +206,18 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Text(
+                  'Email nhận voucher: ',
+                  style: TextStyle(color: AppColor.lightGrey, fontSize: 12),
+                ),
+                Expanded(
+                  child: _getUserMail(),
+                )
+              ],
             ),
             SizedBox(height: 16),
             Expanded(
@@ -262,15 +292,18 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
                                                                     '${modal.shopDiscountPercent.toInt()}%'),
                                                                 _buildPriceRow(
                                                                     'Giảm giá',
-                                                                    modal
+                                                                    -modal
                                                                         .discountPrice),
                                                                 _buildNumberRow(
                                                                     'Số lượng',
                                                                     modal
                                                                         .quantity
                                                                         .toString()),
-                                                                // _buildPromotionRow(
-                                                                //     'Mã giảm giá', widget.modal.),
+                                                                _buildNumberRow(
+                                                                    'Điểm V-point ',
+                                                                    check!
+                                                                        .vPointUp
+                                                                        .toString()),
                                                                 Divider(),
                                                                 _buildPriceRow(
                                                                   'Tổng số tiền 1 voucher',
@@ -284,6 +317,22 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
                                                 ),
                                               ),
                                             ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'V-point: ',
+                                                    style: TextStyle(
+                                                        color: AppColor.primary,
+                                                        fontWeight:
+                                                            FontWeight.w600),
+                                                  ),
+                                                  Text(check!.vPoint.toString())
+                                                ],
+                                              ),
+                                            )
                                           ],
                                         ),
                                       ),
@@ -320,33 +369,14 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
                                         vertical: 8, horizontal: 8),
                                     child: Column(
                                       children: [
-                                        // Row(
-                                        //   crossAxisAlignment:
-                                        //       CrossAxisAlignment.center,
-                                        //   children: [
-                                        //     IconButton(
-                                        //         padding: EdgeInsets.zero,
-                                        //         constraints: BoxConstraints(),
-                                        //         onPressed: () {},
-                                        //         icon: Icon(
-                                        //           Icons.radio_button_off,
-                                        //           color: AppColor.lightGrey,
-                                        //           size: 16,
-                                        //         )),
-                                        //     Text('Sử dụng số dư ví')
-                                        //   ],
-                                        // ),
                                         InkWell(
                                           onTap: () {
-                                            _orderRequest();
-                                            setState(() {
-                                              isActive =
-                                                  !isActive; // Toggle active state
-                                            });
+                                            // _orderRequest();
+                                            toggleActiveState(1);
                                           },
                                           child: Container(
                                             decoration: BoxDecoration(
-                                              color: isActive
+                                              color: activeStates[1]!
                                                   ? AppColor.lightBlue
                                                   : AppColor.white,
                                               borderRadius:
@@ -362,12 +392,50 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
                                                         BoxConstraints(),
                                                     onPressed: () {},
                                                     icon: Icon(
-                                                      isActive
+                                                      activeStates[1]!
                                                           ? Icons
                                                               .radio_button_checked
                                                           : Icons
                                                               .radio_button_off,
-                                                      color: isActive
+                                                      color: activeStates[1]!
+                                                          ? AppColor.primary
+                                                          : AppColor.lightGrey,
+                                                      size: 16,
+                                                    )),
+                                                Text('Thanh toán với ví')
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            // _orderRequest();
+                                            toggleActiveState(0);
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: activeStates[0]!
+                                                  ? AppColor.lightBlue
+                                                  : AppColor.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(7.0),
+                                            ),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                IconButton(
+                                                    padding: EdgeInsets.zero,
+                                                    constraints:
+                                                        BoxConstraints(),
+                                                    onPressed: () {},
+                                                    icon: Icon(
+                                                      activeStates[0]!
+                                                          ? Icons
+                                                              .radio_button_checked
+                                                          : Icons
+                                                              .radio_button_off,
+                                                      color: activeStates[0]!
                                                           ? AppColor.primary
                                                           : AppColor.lightGrey,
                                                       size: 16,
@@ -406,100 +474,209 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
                                   ],
                                 ),
                                 SizedBox(height: 16),
-                                isActive
+                                isButtonActive
                                     ? ElevatedButton(
-                                        onPressed: () {
-                                          _orderStatusRequest();
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return Center(
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      16.0),
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      SizedBox(height: 10),
-                                                      SizedBox(
-                                                        height: 240,
-                                                        width: 240,
-                                                        child: Image.network(
-                                                          'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        height: 8,
-                                                      ),
-                                                      ElevatedButton(
-                                                        onPressed: () async {
-                                                          final path =
-                                                              '${Directory.systemTemp.path}/QR-code.jpg';
-                                                          await Dio().download(
-                                                            'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
-                                                            path,
-                                                          );
-                                                          await Gal.putImage(
-                                                              path);
-                                                          TopSnackbar.show(
-                                                              context,
-                                                              'Đã tải ảnh');
-                                                        },
-                                                        child: SizedBox(
-                                                          width: 100,
-                                                          child: Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              Icon(
-                                                                Icons
-                                                                    .download_outlined,
-                                                                color: AppColor
-                                                                    .white,
-                                                              ),
-                                                              SizedBox(
-                                                                width: 8,
-                                                              ),
-                                                              Text(
-                                                                'Tải ảnh',
-                                                                style:
-                                                                    TextStyle(
-                                                                  color: AppColor
-                                                                      .white,
-                                                                  fontSize: 11,
-                                                                ),
-                                                              ),
-                                                            ],
+                                        onPressed: () async {
+                                          // performAction();
+
+                                          if (activeStates[0] == true) {
+                                            // Trigger the side-effect actions here
+                                            await _orderRequest(); // Call the function
+
+                                            // Show the dialog
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return Center(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            16.0),
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        SizedBox(height: 10),
+                                                        SizedBox(
+                                                          height: 240,
+                                                          width: 240,
+                                                          child: Image.network(
+                                                            'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check!.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
                                                           ),
                                                         ),
-                                                      )
-                                                    ],
+                                                        SizedBox(height: 8),
+                                                        ElevatedButton(
+                                                          onPressed: () async {
+                                                            final path =
+                                                                '${Directory.systemTemp.path}/QR-code.jpg';
+                                                            await Dio()
+                                                                .download(
+                                                              'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
+                                                              path,
+                                                            );
+                                                            await Gal.putImage(
+                                                                path);
+                                                            TopSnackbar.show(
+                                                                context,
+                                                                'Đã tải ảnh');
+                                                          },
+                                                          child: SizedBox(
+                                                            width: 100,
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Icon(
+                                                                  Icons
+                                                                      .download_outlined,
+                                                                  color: AppColor
+                                                                      .white,
+                                                                ),
+                                                                SizedBox(
+                                                                    width: 8),
+                                                                Text(
+                                                                  'Tải ảnh',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: AppColor
+                                                                        .white,
+                                                                    fontSize:
+                                                                        11,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
+                                                );
+                                              },
+                                            );
+                                          } else if (activeStates[1] == true) {
+                                            if (check.balance <=
+                                                check.totalPrice) {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return Center(
+                                                    child: Container(
+                                                      height: 120,
+                                                      width: 350,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12.0),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color:
+                                                                Colors.black12,
+                                                            blurRadius: 4,
+                                                            offset:
+                                                                Offset(0, 2),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8),
+                                                        child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .stretch,
+                                                            children: [
+                                                              Center(
+                                                                child: Text(
+                                                                  'Số dư ví không đủ vui lòng nạp thêm',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          16),
+                                                                ),
+                                                              ),
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .end,
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .end,
+                                                                children: [
+                                                                  ElevatedButton(
+                                                                      style: ElevatedButton
+                                                                          .styleFrom(
+                                                                        backgroundColor:
+                                                                            AppColor.theme,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        Navigator.of(context)
+                                                                            .pop();
+                                                                      },
+                                                                      child: Text(
+                                                                          'Hủy')),
+                                                                  SizedBox(
+                                                                    width: 8,
+                                                                  ),
+                                                                  ElevatedButton(
+                                                                      onPressed:
+                                                                          () {
+                                                                        Navigator.push(
+                                                                            context,
+                                                                            MaterialPageRoute(builder: (BuildContext context) => const WalletPage()));
+                                                                      },
+                                                                      child:
+                                                                          Text(
+                                                                        'Nạp thêm',
+                                                                        style: TextStyle(
+                                                                            color:
+                                                                                AppColor.white),
+                                                                      )),
+                                                                ],
+                                                              )
+                                                            ]),
+                                                      ), // Custom message for insufficient balance
+                                                    ),
+                                                  );
+                                                },
                                               );
-                                            },
-                                          );
+                                            } else {
+                                              handleUseBalance(
+                                                  check.balance.toInt());
+                                              _orderRequest();
+                                            }
+                                          }
                                         }, // Disable button if no items are selected
                                         style: ElevatedButton.styleFrom(
                                           minimumSize:
                                               Size(double.infinity, 50),
                                           backgroundColor: Colors.blueAccent,
                                         ),
-                                        child: Text(
-                                          'Đặt voucher',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColor.white),
-                                        ),
+                                        child: isLoading
+                                            ? CircularProgressIndicator(
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(Colors.white))
+                                            : Text(
+                                                'Đặt voucher',
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: AppColor.white),
+                                              ),
                                       )
                                     : ElevatedButton(
                                         onPressed: null,
@@ -526,6 +703,22 @@ class _CheckoutPageState extends State<CheckoutPageTest> {
         ),
       ),
     );
+  }
+
+  Widget _getUserMail() {
+    return FutureBuilder<AppUser>(
+        future: futureGetUser,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            AppUser user = snapshot.data!;
+            getEmail = user.email;
+            return Text(user.email.toString());
+          }
+        });
   }
 
   // Helper method to build each row in the pricing summary

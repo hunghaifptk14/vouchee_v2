@@ -292,7 +292,7 @@ class ApiServices {
   Future<AppUser> getUserInfo() async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/auth/login_with_google_token?token=';
-    final response = await http.get(Uri.parse(apiUrl));
+    final response = await http.get(Uri.parse('$apiUrl$auth'));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
@@ -471,9 +471,6 @@ class ApiServices {
 
   Future<Checkout?> checkoutCart({
     required List<ItemBrief> items,
-    required int useVpoint,
-    required int useBalance,
-    required String giftEmail,
   }) async {
     final String apiUrl = 'https://api.vouchee.shop/api/v1/cart/checkout';
 
@@ -485,9 +482,9 @@ class ApiServices {
       // Create the request body
       final body = jsonEncode({
         "item_brief": itemBriefList,
-        "use_VPoint": useVpoint,
-        "use_balance": useBalance,
-        "gift_email": giftEmail,
+        "use_VPoint": 0,
+        "use_balance": 0,
+        "gift_email": '',
       });
 
       final response = await http.post(
@@ -581,6 +578,7 @@ class ApiServices {
         "use_balance": useBalance,
         "gift_email": giftEmail
       });
+      print('order use balance==> ${useBalance}');
 
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -590,7 +588,7 @@ class ApiServices {
         },
         body: body,
       );
-      print(response.body);
+      print('order==> ${response.body}');
       if (response.statusCode == 200) {
         orderID = jsonDecode(response.body)['value'];
         // print('Order created: $orderID');

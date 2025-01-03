@@ -123,8 +123,7 @@ class CartScreenState extends State<CartPage> {
   }
 
   Future<void> _checkout() async {
-    await apiServices.checkoutCart(
-        items: itemBriefList, giftEmail: 'mail', useBalance: 0, useVpoint: 0);
+    await apiServices.checkoutCart(items: itemBriefList);
     print(itemBriefList);
   }
 
@@ -764,12 +763,8 @@ class CartScreenState extends State<CartPage> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              CheckoutPageTest(
+                                          builder: (context) => CheckoutPage(
                                             selectedItems: itemBriefList,
-                                            giftEmail: '',
-                                            useBalance: 0,
-                                            useVpoint: 0,
                                           ),
                                         ),
                                       );
