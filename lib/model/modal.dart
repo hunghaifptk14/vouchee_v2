@@ -10,20 +10,20 @@ class Modal {
   final String title;
   int quantity;
   final int stock;
-  final double originalPrice;
-  double sellPrice;
-  final double shopDiscountMoney;
-  final double shopDiscountPercent;
-  final double discountPrice;
-  final double salePrice;
-  final double totalUnitPrice;
-  final double totalDiscountPrice;
-  final double totalFinalPrice;
+  final num originalPrice;
+  num sellPrice;
+  final num shopDiscountMoney;
+  final num shopDiscountPercent;
+  final num discountPrice;
+  final num salePrice;
+  final num totalUnitPrice;
+  final num totalDiscountPrice;
+  final num totalFinalPrice;
   final String status;
   final String image;
   final String startDate;
   final String endDate;
-  final double averageRating;
+  final num averageRating;
   bool selected = false;
   final String? shopPromotionId;
 
@@ -63,21 +63,21 @@ class Modal {
       brandImage: json['brandImage'] ?? '',
       title: json['title'] ?? '',
       quantity: json['quantity'] ?? 0,
-      stock: json['stock'],
-      originalPrice: (json['originalPrice'] ?? 0).toDouble(),
-      sellPrice: (json['sellPrice'] ?? 0).toDouble(),
-      shopDiscountMoney: (json['shopDiscountMoney'] ?? 0).toDouble(),
-      shopDiscountPercent: (json['shopDiscountPercent'] ?? 0).toDouble(),
-      discountPrice: (json['discountPrice'] ?? 0).toDouble(),
-      salePrice: (json['salePrice'] ?? 0).toDouble(),
-      totalUnitPrice: (json['totalUnitPrice'] ?? 0).toDouble(),
-      totalDiscountPrice: (json['totalDiscountPrice'] ?? 0).toDouble(),
-      totalFinalPrice: (json['totalFinalPrice'] ?? 0).toDouble(),
+      stock: (json['stock'] ?? 0).tonum(),
+      originalPrice: (json['originalPrice'] ?? 0).tonum(),
+      sellPrice: (json['sellPrice'] ?? 0).tonum(),
+      shopDiscountMoney: (json['shopDiscountMoney'] ?? 0).tonum(),
+      shopDiscountPercent: (json['shopDiscountPercent'] ?? 0).tonum(),
+      discountPrice: (json['discountPrice'] ?? 0).tonum(),
+      salePrice: (json['salePrice'] ?? 0).tonum(),
+      totalUnitPrice: (json['totalUnitPrice'] ?? 0).tonum(),
+      totalDiscountPrice: (json['totalDiscountPrice'] ?? 0).tonum(),
+      totalFinalPrice: (json['totalFinalPrice'] ?? 0).tonum(),
       image: json['image'] ?? '',
       status: json['status'] ?? '',
       startDate: json['startDate'] ?? '',
       endDate: json['endDate'] ?? '',
-      averageRating: (json['averageRating'] ?? 0).toDouble(),
+      averageRating: (json['averageRating'] ?? 0).tonum(),
       shopPromotionId: json['shopPromotionId'] ?? '',
     );
   }

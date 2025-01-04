@@ -26,7 +26,7 @@ class _ModalListState extends State<ModalList> {
     futureVoucher = apiService.fetchVoucherById(widget.voucherId);
   }
 
-  String _currencyFormat(double amount) {
+  String _currencyFormat(num amount) {
     String format = NumberFormat.currency(
       locale: 'vi_VN',
       symbol: '₫',
@@ -142,7 +142,7 @@ class _ModalListState extends State<ModalList> {
                                               width: 4,
                                             ),
                                             Text(
-                                              modal.stock.toInt().toString(),
+                                              modal.stock.toString(),
                                               style: const TextStyle(
                                                 fontSize: 11,
                                                 color: AppColor.black,

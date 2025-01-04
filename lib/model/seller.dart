@@ -8,7 +8,7 @@ class Seller {
   final String? appliedPromotion;
   final List<Modal> modals;
   String? selectedPromotionId;
-  double totalPriceAfterDiscount = 0;
+  num totalPriceAfterDiscount = 0;
   Seller({
     required this.sellerId,
     required this.sellerName,

@@ -127,7 +127,7 @@ class CartScreenState extends State<CartPage> {
     print(itemBriefList);
   }
 
-  double _calculateTotalPrice() {
+  num _calculateTotalPrice() {
     if (selectedItems.isEmpty) return 0.0;
     return selectedItems.fold(0.0, (total, modal) {
       return total +
@@ -221,7 +221,7 @@ class CartScreenState extends State<CartPage> {
     }
   }
 
-  String _currencyFormat(double amount) {
+  String _currencyFormat(num amount) {
     String format = NumberFormat.currency(
       locale: 'vi_VN',
       symbol: '₫',
@@ -234,7 +234,7 @@ class CartScreenState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
-    // double widthfit = MediaQuery.of(context).size.width;
+    // num widthfit = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: Text('Giỏ hàng'),

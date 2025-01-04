@@ -31,7 +31,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
     await apiService.fetchCategoryById(widget.category.id);
   }
 
-  String _currencyFormat(double amount) {
+  String _currencyFormat(int amount) {
     String format = NumberFormat.currency(
       locale: 'vi_VN',
       symbol: '₫',
@@ -40,7 +40,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
     return format;
   }
 
-  double _percentDiscount(double sellPrice, double salePrice) {
+  double _percentDiscount(int sellPrice, int salePrice) {
     double discount = (1 - (salePrice / sellPrice)) * 100;
     return discount.roundToDouble();
   }
@@ -137,27 +137,28 @@ class _CategoryDetailState extends State<CategoryDetail> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(
-                                            _currencyFormat(voucher.sellPrice),
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.green),
-                                          ),
-                                          voucher.salePrice != 0
-                                              ? Text(
-                                                  '-${_percentDiscount(voucher.sellPrice, voucher.salePrice).toInt().toString()}%',
-                                                  style: const TextStyle(
-                                                    fontSize: 11,
-                                                    color: AppColor.black,
-                                                  ),
-                                                )
-                                              : Text(
-                                                  '',
-                                                  style: const TextStyle(
-                                                    fontSize: 11,
-                                                    color: AppColor.black,
-                                                  ),
-                                                )
+                                          // Text(
+                                          //   _currencyFormat(
+                                          //       voucher.sellPrice.toInt()),
+                                          //   style: TextStyle(
+                                          //       fontSize: 12,
+                                          //       color: Colors.green),
+                                          // ),
+                                          // voucher.salePrice != 0
+                                          //     ? Text(
+                                          //         '-${_percentDiscount(voucher.sellPrice.toInt(), voucher.salePrice.toInt()).toInt().toString()}%',
+                                          //         style: const TextStyle(
+                                          //           fontSize: 11,
+                                          //           color: AppColor.black,
+                                          //         ),
+                                          //       )
+                                          //     : Text(
+                                          //         '',
+                                          //         style: const TextStyle(
+                                          //           fontSize: 11,
+                                          //           color: AppColor.black,
+                                          //         ),
+                                          //       )
                                         ],
                                       )
                                     ],

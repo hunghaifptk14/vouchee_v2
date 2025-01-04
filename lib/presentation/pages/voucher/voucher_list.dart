@@ -25,11 +25,6 @@ class _VoucherListState extends State<VoucherList> {
     futureVouchers = apiService.fetchVouchers();
   }
 
-  double _percentDiscount(double sellPrice, double salePrice) {
-    double discount = (1 - (salePrice / sellPrice)) * 100;
-    return discount.roundToDouble();
-  }
-
   String _currencyFormat(double amount) {
     String format = NumberFormat.currency(
       locale: 'vi_VN',
@@ -146,13 +141,14 @@ class _VoucherListState extends State<VoucherList> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      _currencyFormat(voucher.sellPrice),
+                                      _currencyFormat(
+                                          voucher.sellPrice.toDouble()),
                                       style: TextStyle(
                                           fontSize: 12, color: Colors.green),
                                     ),
                                     voucher.salePrice != 0
                                         ? Text(
-                                            '-${_percentDiscount(voucher.sellPrice, voucher.salePrice).toInt().toString()}%',
+                                            '-${voucher.shopDiscount}%',
                                             style: const TextStyle(
                                               fontSize: 11,
                                               color: AppColor.black,

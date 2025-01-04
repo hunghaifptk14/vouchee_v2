@@ -57,7 +57,7 @@ class VoucherSearchDelegate extends SearchDelegate<Voucher> {
           ),
           title: Text(voucher.title),
           subtitle: Text(voucher.brandName),
-          trailing: Text('Rating: ${voucher.rating}'),
+          // trailing: Text('Rating: ${voucher.rating}'),
           onTap: () {
             onVoucherSelected(voucher);
             close(context,
@@ -84,7 +84,7 @@ class VoucherSearchDelegate extends SearchDelegate<Voucher> {
           leading: Image.network(voucher.brandImage),
           title: Text(voucher.title),
           subtitle: Text(voucher.brandName),
-          trailing: Text('Rating: ${voucher.rating}'),
+          // trailing: Text('Rating: ${voucher.rating}'),
           onTap: () {
             onVoucherSelected(voucher);
             close(context,

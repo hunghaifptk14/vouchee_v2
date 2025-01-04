@@ -82,16 +82,16 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                             SizedBox(height: 8),
 
                             // Rating
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 14,
-                                ),
-                                Text('${widget.voucher.rating}'),
-                              ],
-                            ),
+                            // Row(
+                            //   children: [
+                            //     Icon(
+                            //       Icons.star,
+                            //       color: Colors.yellow,
+                            //       size: 14,
+                            //     ),
+                            //     Text('${widget.voucher.}'),
+                            //   ],
+                            // ),
                             // HtmlElementView.fromTagName(tagName: 'p'),
                             SizedBox(height: 8),
 

@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:vouchee/model/cart.dart';
@@ -19,6 +20,7 @@ import 'package:vouchee/model/transactions.dart';
 import 'package:vouchee/model/user.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/model/wallet.dart';
+import 'package:intl/intl.dart';
 
 String? auth;
 String? orderID;
@@ -104,18 +106,41 @@ class ApiServices {
   }
 
   Future<Modal> fetchModalById(String modalId) async {
-    final String apiUrl = 'https://api.vouchee.shop/api/v1/modal/get_modal/';
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/modal/get_modal/$modalId';
+
     try {
-      final response = await http.get(Uri.parse('$apiUrl$modalId'));
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth',
+        },
+      );
+
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return Modal.fromJson(jsonData);
+        // Parse the JSON response
+        Map<String, dynamic> jsonData = json.decode(response.body);
+
+        // Extract the voucherCodes list from the response
+        List<dynamic> voucherCodes = jsonData['results']['voucherCodes'];
+
+        // Find the modal matching the modalId
+        var modalData = voucherCodes.firstWhere(
+          (modal) => modal['modalId'] == modalId,
+          orElse: () => null,
+        );
+
+        if (modalData != null) {
+          return Modal.fromJson(modalData);
+        } else {
+          throw Exception('Modal not found for the provided modalId');
+        }
       } else {
-        throw Exception('Không tải được sản phẩm');
+        throw Exception('Failed to load modal');
       }
     } catch (e) {
-      print(e);
-      throw Exception('Không tải được sản phẩm: $e');
+      throw Exception('Error fetching modal: $e');
     }
   }
 
@@ -123,18 +148,24 @@ class ApiServices {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/voucher/get_all_voucher';
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth',
+        },
+      );
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         List<dynamic> results = jsonData['results'];
-
+        print('voucher data: ${jsonData}');
         return results.map((voucher) => Voucher.fromJson(voucher)).toList();
       } else {
         throw Exception('Không tải được sản phẩm');
       }
     } catch (e) {
       print(e);
-      throw Exception('Không tải được sản phẩm: $e');
+      throw Exception('Không tải được sản phẩm throw ????: $e');
     }
   }
 
@@ -213,6 +244,7 @@ class ApiServices {
       final jsonData = json.decode(response.body);
       List<dynamic> results = jsonData['results'];
       // return jsonData.map((json) => Category.fromJson(json)).toList();
+      print(jsonData);
       return results.map((category) => Category.fromJson(category)).toList();
     } else {
       throw Exception('Không tải category');
@@ -220,7 +252,7 @@ class ApiServices {
   }
 
   Future<List<NearVoucher>> fetchNearVouchers(
-      {required double lat, required double lon}) async {
+      {required num lat, required num lon}) async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/voucher/get_nearest_vouchers';
     try {
@@ -337,7 +369,6 @@ class ApiServices {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/cart/decrease_quantity/';
     final url = Uri.parse('$apiUrl$modalId');
-    print(url);
     try {
       final response = await http.put(
         url,
@@ -392,7 +423,6 @@ class ApiServices {
   Future<bool> RemoveItem(String modalId) async {
     final String apiUrl = 'https://api.vouchee.shop/api/v1/cart/remove_item/';
     final url = Uri.parse('$apiUrl$modalId');
-    print(url);
     try {
       final response = await http.delete(
         url,
@@ -421,7 +451,6 @@ class ApiServices {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/cart/update_quantity/';
     final url = Uri.parse('$apiUrl$modalId?quantity=$quantity');
-    print(url);
     try {
       final response = await http.put(
         url,
@@ -1041,38 +1070,65 @@ class ApiServices {
     }
   }
 
-  Future<void> refund(String image, String voucherCodeId, String content,
-      int lon, int lat) async {
-    final String apiUrl =
+  Future<bool> refundVoucherCode(
+    List<String> imagePaths,
+    String voucherCodeId,
+    String content,
+    num? latitude,
+    num? longitude,
+  ) async {
+    if (latitude == null ||
+        longitude == null ||
+        imagePaths.isEmpty ||
+        content.isEmpty) {
+      print('Missing required data');
+      return false;
+    }
+    final apiUrl =
         'https://api.vouchee.shop/api/v1/refundRequest/create_refund_request';
-    final url = Uri.parse(apiUrl);
+    // Convert images to Base64
+    List<String> base64Images = await _encodeImagesToBase64(imagePaths);
 
-    // Prepare the request body
-    final body = {
-      image: 'image',
-      voucherCodeId: 'voucherCodeId',
-      content: 'content',
-      lon: 'lon',
-      lat: 'lat'
+    // Prepare request body
+    final requestBody = {
+      "images": base64Images,
+      "voucherCodeId": voucherCodeId,
+      "content": content,
+      "lon": longitude,
+      "lat": latitude,
     };
 
     try {
+      // Make POST request
       final response = await http.post(
-        url,
+        Uri.parse(apiUrl),
         headers: {
           'Authorization': 'Bearer $auth',
           "Content-Type": "application/json",
         },
-        body: jsonEncode(body),
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {
-        print("refund ok");
+        print('Data successfully sent');
+        return true;
       } else {
-        print("refund fail");
+        print('Failed to send data: ${response.statusCode}');
+        return false;
       }
     } catch (e) {
-      throw ("Error during API call: $e");
+      print('Error sending data: $e');
+      return false;
     }
+  }
+
+  // Helper method to encode images to Base64
+  Future<List<String>> _encodeImagesToBase64(List<String> imagePaths) async {
+    List<String> base64Images = [];
+    for (String path in imagePaths) {
+      final bytes = await File(path).readAsBytes();
+      base64Images.add(base64Encode(bytes));
+    }
+    return base64Images;
   }
 }

@@ -24,7 +24,6 @@ class ModalsDetailPage extends StatefulWidget {
 }
 
 class _ModalsDetailPageState extends State<ModalsDetailPage> {
-  final ApiServices cartService = ApiServices();
   late Future<List<Modal>> futureModal;
   final ApiServices apiService = ApiServices();
 
@@ -44,7 +43,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
   }
 
   Future<void> _addToCart(String modalId) async {
-    bool success = await cartService.addToCart(modalId);
+    bool success = await apiService.addToCart(modalId);
     if (success) {
       TopSnackbar.show(context, 'Đã thêm sản phẩm vào giỏ hàng',
           backgroundColor: AppColor.success);
@@ -112,7 +111,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                       height: 8,
                     ),
                     Text(
-                      _currencyFormat(widget.modal.sellPrice),
+                      _currencyFormat(widget.modal.sellPrice.toDouble()),
                       style: const TextStyle(
                           fontSize: 16,
                           color: Colors.green,
@@ -159,7 +158,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                         //       style: TextStyle(fontSize: 14),
                         //     )),
                         Text(
-                          widget.modal.stock.toInt().toString(),
+                          widget.modal.stock.toString(),
                           style: TextStyle(fontWeight: FontWeight.w500),
                         )
                       ],
@@ -185,7 +184,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                               : OutlinedButton(
                                   onPressed: () {
                                     _addToCart(widget.modal.id);
-                                    print(widget.modal.stock.toInt());
+                                    print(widget.modal.stock);
                                   },
                                   style: OutlinedButton.styleFrom(
                                       shape: RoundedRectangleBorder(

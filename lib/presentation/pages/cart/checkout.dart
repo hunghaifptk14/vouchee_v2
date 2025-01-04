@@ -286,14 +286,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                                                 _buildPriceRow(
                                                                     'Giá',
                                                                     modal
-                                                                        .sellPrice),
+                                                                        .sellPrice
+                                                                        .toDouble()),
                                                                 _buildNumberRow(
                                                                     'Áp khuyễn mãi',
                                                                     '${modal.shopDiscountPercent.toInt()}%'),
                                                                 _buildPriceRow(
                                                                     'Giảm giá',
                                                                     -modal
-                                                                        .discountPrice),
+                                                                        .discountPrice
+                                                                        .toDouble()),
                                                                 _buildNumberRow(
                                                                     'Số lượng',
                                                                     modal
@@ -308,7 +310,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                                                 _buildPriceRow(
                                                                   'Tổng số tiền 1 voucher',
                                                                   modal
-                                                                      .totalFinalPrice,
+                                                                      .totalFinalPrice
+                                                                      .toDouble(),
                                                                   isBold: true,
                                                                 ),
                                                               ],
