@@ -11,6 +11,7 @@ import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/checkout.dart';
 import 'package:vouchee/model/item_brief.dart';
 import 'package:vouchee/model/user.dart';
+import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
 import 'package:vouchee/presentation/pages/wallet/wallet.dart';
@@ -19,9 +20,9 @@ import 'package:vouchee/presentation/widgets/snack_bar.dart';
 class CheckoutPage extends StatefulWidget {
   final List<ItemBrief> selectedItems;
   const CheckoutPage({
-    Key? key,
+    super.key,
     required this.selectedItems,
-  }) : super(key: key);
+  });
 
   @override
   _CheckoutPageState createState() => _CheckoutPageState();
@@ -37,9 +38,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
   bool isButtonActive = false;
   bool isLoading = false;
   String getEmail = '';
-  int getUseVpoint = 0;
-  int getUseBalance = 0;
-
+  int? getUseVpoint = 0;
+  int? getUseBalance = 0;
+  bool isOrderSuccess = false;
+  TextEditingController vPointController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -153,12 +155,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
     if (getOrderIDString == null) {
       setState(() {
         isLoading = false;
+        isOrderSuccess = false;
       });
       TopSnackbar.show(context, 'Tạo đơn hàng thất bại',
           backgroundColor: AppColor.warning);
     } else {
       setState(() {
         isLoading = false;
+        isOrderSuccess = true;
       });
       TopSnackbar.show(context, 'Tạo đơn hàng thành công',
           backgroundColor: AppColor.success);
@@ -229,7 +233,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (!snapshot.hasData) {
-                        return Center(child: Text('No items'));
+                        return Center(child: Text('Chưa có đơn hàng'));
                       } else {
                         Checkout? check = snapshot.data;
                         // final checkoutList = check ?? [];
@@ -286,21 +290,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                                                 _buildPriceRow(
                                                                     'Giá',
                                                                     modal
-                                                                        .sellPrice),
+                                                                        .sellPrice
+                                                                        .toDouble()),
                                                                 _buildNumberRow(
                                                                     'Áp khuyễn mãi',
                                                                     '${modal.shopDiscountPercent.toInt()}%'),
                                                                 _buildPriceRow(
                                                                     'Giảm giá',
                                                                     -modal
-                                                                        .discountPrice),
+                                                                        .discountPrice
+                                                                        .toDouble()),
                                                                 _buildNumberRow(
                                                                     'Số lượng',
                                                                     modal
                                                                         .quantity
                                                                         .toString()),
                                                                 _buildNumberRow(
-                                                                    'Điểm V-point ',
+                                                                    'Thưởng V-point ',
                                                                     check!
                                                                         .vPointUp
                                                                         .toString()),
@@ -308,7 +314,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                                                 _buildPriceRow(
                                                                   'Tổng số tiền 1 voucher',
                                                                   modal
-                                                                      .totalFinalPrice,
+                                                                      .totalFinalPrice
+                                                                      .toDouble(),
                                                                   isBold: true,
                                                                 ),
                                                               ],
@@ -320,17 +327,102 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                             Padding(
                                               padding:
                                                   const EdgeInsets.all(8.0),
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    'V-point: ',
-                                                    style: TextStyle(
-                                                        color: AppColor.primary,
-                                                        fontWeight:
-                                                            FontWeight.w600),
-                                                  ),
-                                                  Text(check!.vPoint.toString())
-                                                ],
+                                              child: SizedBox(
+                                                width: double.infinity,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          'V-point: ',
+                                                          style: TextStyle(
+                                                            color: AppColor
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                        ),
+                                                        Text(check!.vPoint
+                                                            .toString()),
+                                                      ],
+                                                    ),
+                                                    TextButton(
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                        minimumSize: Size.zero,
+                                                        padding:
+                                                            EdgeInsets.zero,
+                                                        tapTargetSize:
+                                                            MaterialTapTargetSize
+                                                                .shrinkWrap,
+                                                      ),
+                                                      onPressed: () {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (BuildContext
+                                                              context) {
+                                                            return AlertDialog(
+                                                              title: Text(
+                                                                "Nhập V-point bạn muốn dùng",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        18),
+                                                              ),
+                                                              content:
+                                                                  TextField(
+                                                                controller:
+                                                                    vPointController,
+                                                                keyboardType:
+                                                                    TextInputType
+                                                                        .number,
+                                                                decoration:
+                                                                    InputDecoration(
+                                                                  labelText:
+                                                                      null,
+                                                                ),
+                                                              ),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed:
+                                                                      () {
+                                                                    setState(
+                                                                        () {
+                                                                      getUseVpoint =
+                                                                          int.tryParse(
+                                                                              vPointController.text);
+                                                                    });
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  },
+                                                                  child: Text(
+                                                                      "Hoàn tất"),
+                                                                ),
+                                                                TextButton(
+                                                                  onPressed:
+                                                                      () {
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  },
+                                                                  child: Text(
+                                                                      "Hủy"),
+                                                                ),
+                                                              ],
+                                                            );
+                                                          },
+                                                        );
+                                                      }, // Trigger the dialog on press
+                                                      child: Text(
+                                                        getUseVpoint != 0
+                                                            ? getUseVpoint
+                                                                .toString()
+                                                            : 'Sử dụng điểm', // Show selected V-point or default text
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             )
                                           ],
@@ -484,85 +576,95 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                             await _orderRequest(); // Call the function
 
                                             // Show the dialog
-                                            showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return Center(
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            16.0),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        SizedBox(height: 10),
-                                                        SizedBox(
-                                                          height: 240,
-                                                          width: 240,
-                                                          child: Image.network(
-                                                            'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check!.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 8),
-                                                        ElevatedButton(
-                                                          onPressed: () async {
-                                                            final path =
-                                                                '${Directory.systemTemp.path}/QR-code.jpg';
-                                                            await Dio()
-                                                                .download(
-                                                              'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
-                                                              path,
-                                                            );
-                                                            await Gal.putImage(
-                                                                path);
-                                                            TopSnackbar.show(
-                                                                context,
-                                                                'Đã tải ảnh');
-                                                          },
-                                                          child: SizedBox(
-                                                            width: 100,
-                                                            child: Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
+                                            isOrderSuccess
+                                                ? showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return Center(
+                                                        child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(16.0),
+                                                            child: Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
                                                               crossAxisAlignment:
                                                                   CrossAxisAlignment
                                                                       .center,
                                                               children: [
-                                                                Icon(
-                                                                  Icons
-                                                                      .download_outlined,
-                                                                  color: AppColor
-                                                                      .white,
-                                                                ),
                                                                 SizedBox(
-                                                                    width: 8),
-                                                                Text(
-                                                                  'Tải ảnh',
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: AppColor
-                                                                        .white,
-                                                                    fontSize:
-                                                                        11,
+                                                                    height: 10),
+                                                                SizedBox(
+                                                                  height: 240,
+                                                                  width: 240,
+                                                                  child: Image
+                                                                      .network(
+                                                                    'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
                                                                   ),
                                                                 ),
+                                                                SizedBox(
+                                                                    height: 8),
+                                                                ElevatedButton(
+                                                                  onPressed:
+                                                                      () async {
+                                                                    final path =
+                                                                        '${Directory.systemTemp.path}/QR-code.jpg';
+                                                                    await Dio()
+                                                                        .download(
+                                                                      'https://qr.sepay.vn/img?acc=0000321753575&bank=MBBank&amount=${check.finalPrice}&des=ORD$getOrderIDString&template=TEMPLATE&download=DOWNLOAD',
+                                                                      path,
+                                                                    );
+                                                                    await Gal
+                                                                        .putImage(
+                                                                            path);
+                                                                    TopSnackbar.show(
+                                                                        context,
+                                                                        'Đã tải ảnh');
+                                                                  },
+                                                                  child:
+                                                                      SizedBox(
+                                                                    width: 100,
+                                                                    child: Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        Icon(
+                                                                          Icons
+                                                                              .download_outlined,
+                                                                          color:
+                                                                              AppColor.white,
+                                                                        ),
+                                                                        SizedBox(
+                                                                            width:
+                                                                                8),
+                                                                        Text(
+                                                                          'Tải ảnh',
+                                                                          style:
+                                                                              TextStyle(
+                                                                            color:
+                                                                                AppColor.white,
+                                                                            fontSize:
+                                                                                11,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                )
                                                               ],
-                                                            ),
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            );
+                                                            )),
+                                                      );
+                                                    },
+                                                  )
+                                                : Container();
                                           } else if (activeStates[1] == true) {
-                                            if (check.balance <=
+                                            if (check.balance <
                                                 check.totalPrice) {
                                               showDialog(
                                                 context: context,

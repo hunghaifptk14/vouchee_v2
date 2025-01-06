@@ -4,7 +4,7 @@ class AppUser {
   final String email;
   final String? phoneNumber;
   final String role;
-  final String status;
+  final String? status;
   final String image;
   final String? bankName;
   final String? bankNumber;
@@ -24,15 +24,15 @@ class AppUser {
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
-      name: json['name'],
-      email: json['email'],
-      phoneNumber: json['phoneNumber'],
-      role: json['role'],
-      status: json['status'],
-      image: json['image'],
-      bankName: json['buyerWallet']['bankName'],
-      bankAccount: json['buyerWallet']['bankAccount'],
-      bankNumber: json['buyerWallet']['bankNumber'],
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      phoneNumber: json['phoneNumber'] ?? '',
+      role: json['role'] ?? '',
+      status: json['status'] ?? '',
+      image: json['image'] ?? '',
+      bankName: json['buyerWallet']['bankName'] ?? '',
+      bankAccount: json['buyerWallet']['bankAccount'] ?? '',
+      bankNumber: json['buyerWallet']['bankNumber'] ?? '',
     );
   }
 }

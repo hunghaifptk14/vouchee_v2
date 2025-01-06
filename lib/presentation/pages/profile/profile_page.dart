@@ -1,4 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -13,6 +16,7 @@ import 'package:vouchee/model/user.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
 import 'package:vouchee/presentation/pages/login/login.dart';
 import 'package:vouchee/presentation/pages/profile/edit_bank.dart';
+import 'package:vouchee/presentation/pages/profile/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
   // final User? user;
@@ -41,6 +45,25 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> loadData() async {
     currentUser = apiServices.getCurrentUser();
     selectedBank = bankList.first;
+  }
+
+  String? base64Image;
+  Future<void> _encodeImageToBase64(String imagePath) async {
+    try {
+      final bytes = await File(imagePath).readAsBytes();
+      String base64ImageString = base64Encode(bytes);
+
+      setState(() {
+        base64Image = base64ImageString; // Store the Base64 string
+      });
+    } catch (e) {
+      print("Error encoding image: $e");
+    }
+  }
+
+  void changeImage(String newImagePath) {
+    _encodeImageToBase64(
+        newImagePath); // Call the encoding function with new path
   }
 
   @override
@@ -90,11 +113,47 @@ class _ProfilePageState extends State<ProfilePage> {
                                   backgroundImage: AssetImage(AppImage.man),
                                 ),
                               )
-                            : Center(
-                                child: CircleAvatar(
-                                  radius: 50,
-                                  backgroundImage: NetworkImage(user.image),
-                                ),
+                            : FutureBuilder<void>(
+                                future: _encodeImageToBase64(user.image),
+                                builder: (context, encodingSnapshot) {
+                                  // If the encoding is still in progress, show a loading indicator
+                                  if (encodingSnapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                      child: CircleAvatar(
+                                        radius: 50,
+                                        backgroundImage:
+                                            AssetImage(AppImage.man),
+                                      ),
+                                    );
+                                  } else if (encodingSnapshot.hasError) {
+                                    return Center(
+                                        child: Text(
+                                            'Error: ${encodingSnapshot.error}'));
+                                  } else if (encodingSnapshot.hasData ||
+                                      base64Image != null) {
+                                    // Once base64Image is available, show the image
+                                    return Center(
+                                      child: CircleAvatar(
+                                        radius: 50,
+                                        backgroundImage: base64Image != null
+                                            ? MemoryImage(
+                                                base64Decode(base64Image!))
+                                            : AssetImage(AppImage.man)
+                                                as ImageProvider,
+                                      ),
+                                    );
+                                  } else {
+                                    // If there's no data or still loading, show a default image
+                                    return Center(
+                                      child: CircleAvatar(
+                                        radius: 50,
+                                        backgroundImage:
+                                            AssetImage(AppImage.man),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                         const SizedBox(height: 16),
                         Container(
@@ -127,12 +186,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     IconButton(
                                       onPressed: () {
-                                        // Navigator.push(
-                                        //     context,
-                                        //     MaterialPageRoute(
-                                        //         builder:
-                                        //             (BuildContext context) =>
-                                        //                 const EditProfile()));
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder:
+                                                    (BuildContext context) =>
+                                                        EditProfile()));
                                       },
                                       icon: Icon(
                                         Icons.edit,
@@ -145,7 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 const SizedBox(height: 8),
                                 Text(user.email.toString()),
                                 const SizedBox(height: 8),
-                                user.phoneNumber != null
+                                user.phoneNumber != ''
                                     ? Text(user.phoneNumber.toString())
                                     : Text(
                                         'Chưa có số điện thoại',

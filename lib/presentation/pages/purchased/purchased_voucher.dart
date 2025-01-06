@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/message.dart';
 import 'package:vouchee/model/my_voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/purchased/rating.dart';
 import 'package:vouchee/presentation/pages/purchased/refund.dart';
+import 'package:vouchee/presentation/pages/purchased/show_modal_detail.dart';
 import 'package:vouchee/presentation/widgets/bottomNav/bottom_app_bar.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
@@ -135,25 +137,46 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(7),
-                            child: Image.network(
-                              myvoucher.image,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          title: Text(myvoucher.title),
-                          subtitle: Row(
-                            children: [
-                              Text(
-                                'Số lượng: ',
-                                style: TextStyle(
-                                    color: AppColor.lightGrey, fontSize: 12),
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(7),
+                              child: Image.network(
+                                myvoucher.image,
+                                fit: BoxFit.cover,
                               ),
-                              Text('${myvoucher.voucherCodeCount}')
-                            ],
-                          ),
-                        ),
+                            ),
+                            title: Text(myvoucher.title),
+                            subtitle: Column(
+                              children: [
+                                if (myvoucher.voucherCodes.isNotEmpty)
+                                  Row(
+                                    children: [
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          minimumSize: Size.zero,
+                                          padding: EdgeInsets.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        onPressed: () {
+                                          print(myvoucher
+                                              .voucherCodes[0].modalId);
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      ShowModalDetail(
+                                                        modalId: myvoucher
+                                                            .voucherCodes[0]
+                                                            .modalId,
+                                                      ))); // Uncomment if navigation needed
+                                        },
+                                        child: Text('Xem chi tiết'),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            )),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Divider(
@@ -309,9 +332,13 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                                                                   Center(
                                                                                                       child: Padding(
                                                                                                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                                                                    child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network(voucherCodes.image!)),
+                                                                                                    child: Container(
+                                                                                                        height: 215,
+                                                                                                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(15))),
+                                                                                                        child: QrImageView(
+                                                                                                          data: voucherCodes.image!,
+                                                                                                        )),
                                                                                                     //Test
-                                                                                                    // child: Container(height: 215, decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))), child: Image.network('https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg')),
                                                                                                   )),
                                                                                                   Center(
                                                                                                     child: SizedBox(
@@ -360,7 +387,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                                                                           ),
                                                                                                           ElevatedButton(
                                                                                                             style: ButtonStyle(
-                                                                                                              backgroundColor: MaterialStateProperty.all(AppColor.warning), // Set the color of the button
+                                                                                                              backgroundColor: WidgetStateProperty.all(AppColor.warning), // Set the color of the button
                                                                                                             ),
                                                                                                             onPressed: () {
                                                                                                               Navigator.push(
@@ -577,7 +604,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
 
   Widget _LoadPendingVoucher() {
     return FutureBuilder<List<MyVoucher>?>(
-      future: futureMyPendingVoucher,
+      future: futureMyVoucher,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());

@@ -1,6 +1,6 @@
 class NotificationReceiver {
   final String id;
-  final bool seen;
+  late final bool seen;
   final String receiverName;
   final String receiverImage;
   final String? senderName; // Nullable

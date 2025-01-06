@@ -47,6 +47,7 @@ dependencies:
   carousel_slider: ^5.0.0
   syncfusion_flutter_barcodes: ^27.2.5
   image_picker: ^1.1.2
+  qr_flutter: ^4.1.0
   # cached_network_image: ^3.2.1
   # google_maps_flutter: ^2.9.0
   # custom_info_window: ^1.0.1

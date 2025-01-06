@@ -1,65 +1,76 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:vouchee/core/configs/theme/app_color.dart';
+import 'package:vouchee/networking/api_request.dart';
+import 'package:vouchee/presentation/pages/homePage/home_page.dart';
+import 'package:vouchee/presentation/widgets/appBar/top_app_bar.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class RefundPage extends StatefulWidget {
   final String voucherCodeId;
   const RefundPage({
-    Key? key,
+    super.key,
     required this.voucherCodeId,
-  }) : super(key: key);
+  });
 
   @override
   State<RefundPage> createState() => _RefundPageState();
 }
 
 class _RefundPageState extends State<RefundPage> {
-  double? latitude;
-  double? longitude;
+  num? latitude;
+  num? longitude;
+  List<String> imagePaths = []; // List to store image paths
+  String? content;
+  bool isSuccess = false;
+  final _picker = ImagePicker();
+  final ApiServices _apiService = ApiServices(); // Initialize the ApiService
 
   @override
   void initState() {
     super.initState();
-    _getLocation;
+    _getLocation(); // Fetch location when the page loads
   }
 
+  // Method to get current location
   Future<void> _getLocation() async {
     try {
-      // Check if location services are enabled
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        print('Location services are disabled');
-        showLocationServiceDisabledDialog(context);
-        return;
-      }
+      // Check location permission
+      LocationPermission permission = await Geolocator.checkPermission();
 
-      // Request permission to access location
-      LocationPermission permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        print('Location permission denied');
-        showPermissionDeniedDialog(context);
-        return;
+        // Request permission if not already granted
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception("Location permission denied.");
+        }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        // The user has denied location access forever
-        print('Location permission permanently denied');
+        // Handle permanently denied permission
         showPermissionDeniedDialog(context);
-        return;
+        throw Exception("Location permission permanently denied.");
       }
 
-      // Get the current position (latitude and longitude)
+      // Get current position and store latitude and longitude in respective variables
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
-      // Update the state with the obtained location
       setState(() {
-        latitude = position.latitude;
-        longitude = position.longitude;
+        latitude = position.latitude; // Store latitude
+        longitude = position.longitude; // Store longitude
       });
     } catch (e) {
       print("Error getting location: $e");
-      showErrorDialog(context, "Unable to get user location.");
+      setState(() {
+        latitude = null;
+        longitude =
+            null; // Set latitude and longitude to null if there's an error
+      });
     }
   }
 
@@ -79,8 +90,7 @@ class _RefundPageState extends State<RefundPage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Geolocator
-                    .openAppSettings(); // Open app settings to allow user to enable location manually
+                Geolocator.openAppSettings();
               },
               child: Text('Đi đến cài đặt'),
             ),
@@ -90,94 +100,195 @@ class _RefundPageState extends State<RefundPage> {
     );
   }
 
-  void showLocationServiceDisabledDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Vị trí chưa bật'),
-          content:
-              Text('Vui lòng bật dịch vụ vị trí trong cài đặt của thiết bị.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Hủy'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Geolocator.openLocationSettings(); // Open location settings
-              },
-              child: Text('Đi đến cài đặt'),
-            ),
-          ],
-        );
-      },
-    );
+  // Method to pick images
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        imagePaths.add(pickedFile.path); // Add picked image path to the list
+      });
+    }
   }
 
-  void showErrorDialog(BuildContext context, String errorMessage) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Lỗi'),
-          content: Text(errorMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Đóng'),
-            ),
-          ],
-        );
-      },
+  void _deleteImage(int index) {
+    setState(() {
+      imagePaths.removeAt(index); // Remove image from the list by index
+    });
+  }
+
+  // Method to send data to API
+  Future<void> _sendDataToApi() async {
+    // Call the submitVoucher method from ApiService
+    bool success = await _apiService.refundVoucherCode(
+      imagePaths,
+      widget.voucherCodeId,
+      content ?? '',
+      latitude,
+      longitude,
     );
+
+    if (success) {
+      // Handle success response (you can show a success message or navigate)
+      TopSnackbar.show(context, 'Gửi yêu cầu thành công',
+          backgroundColor: AppColor.success);
+      setState(() {
+        isSuccess = true;
+      });
+    } else {
+      // Handle failure response (show an error message)
+      TopSnackbar.show(context, 'Gửi yêu cầu thất bại',
+          backgroundColor: AppColor.warning);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Thông tin cá nhân')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: latitude == null || longitude == null
-                  ? CircularProgressIndicator() // Show loading if location is not yet available
-                  : Column(
+      appBar: AppBar(title: Text('Yêu cầu hoàn trả')),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Display location
+              // latitude == null || longitude == null
+              //     ? CircularProgressIndicator()
+              //     : Column(
+              //         children: [
+              //           Text('Latitude: $latitude'),
+              //           Text('Longitude: $longitude'),
+              //         ],
+              //       ),
+
+              SizedBox(height: 16),
+              // Show selected images (if any)
+              imagePaths.isNotEmpty
+                  ? SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: imagePaths.map((path) {
+                          int index = imagePaths.indexOf(path);
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Stack(
+                              clipBehavior: Clip
+                                  .none, // To allow floating button outside the image
+                              children: [
+                                // Display image
+                                Image.file(
+                                  File(path),
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      _deleteImage(
+                                          index); // Delete image on tap
+                                    },
+                                    child: Text(
+                                      'Xóa',
+                                      style: TextStyle(color: AppColor.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Text('No images selected'),
+              SizedBox(height: 16),
+              // Image picker button
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    _pickImage();
+                    print(imagePaths);
+                    isSuccess
+                        ? showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Center(
+                                child: Container(
+                                  width: 225,
+                                  height: 300,
+                                  color: AppColor.white,
+                                  child: Column(
+                                    children: [
+                                      Text("Cảm ơn bạn đã gửi phản hồi!"),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        const HomePage()));
+                                          },
+                                          child: Text('Về trang chủ'))
+                                    ],
+                                  ),
+                                ),
+                              );
+                            })
+                        : null;
+                    ;
+                  },
+                  child: SizedBox(
+                    width: 100,
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text('Latitude: $latitude'),
-                        Text('Longitude: $longitude'),
+                        Icon(
+                          Icons.upload_outlined,
+                          color: AppColor.white,
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          'Tải ảnh',
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
-            ),
-
-            SizedBox(height: 16),
-
-            // Display voucher content
-            Text(
-              'voucher.content,',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16),
-
-            // Display voucher code ID
-            Text(
-              'Voucher Code ID: ${widget.voucherCodeId}',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            SizedBox(height: 16),
-
-            // Display location (latitude, longitude)
-            Text(
-              'location',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              // Content input
+              TextField(
+                onChanged: (text) {
+                  content = text; // Update content as user types
+                },
+                decoration: InputDecoration(
+                  labelText: 'Nội dung lỗi',
+                ),
+              ),
+              SizedBox(height: 16),
+              // Submit button to send data to the API
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _sendDataToApi,
+                  child: Text(
+                    'Gửi ',
+                    style: TextStyle(color: AppColor.white, fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

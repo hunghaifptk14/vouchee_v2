@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 class ItemBrief {
   final List<String> modalId;
-  final String promotionId;
+  final String? promotionId;
   final String sellerId;
 
   ItemBrief({

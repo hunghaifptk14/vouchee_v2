@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:vouchee/model/cart.dart';
@@ -15,6 +16,7 @@ import 'package:vouchee/model/notification.dart';
 import 'package:vouchee/model/order.dart';
 import 'package:vouchee/model/promotion.dart';
 import 'package:vouchee/model/rating.dart';
+import 'package:vouchee/model/refund.dart';
 import 'package:vouchee/model/transactions.dart';
 import 'package:vouchee/model/user.dart';
 import 'package:vouchee/model/voucher.dart';
@@ -106,9 +108,16 @@ class ApiServices {
   Future<Modal> fetchModalById(String modalId) async {
     final String apiUrl = 'https://api.vouchee.shop/api/v1/modal/get_modal/';
     try {
-      final response = await http.get(Uri.parse('$apiUrl$modalId'));
+      final response = await http.get(
+        Uri.parse('$apiUrl$modalId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $auth',
+        },
+      );
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        print(jsonData);
         return Modal.fromJson(jsonData);
       } else {
         throw Exception('Không tải được sản phẩm');
@@ -564,8 +573,8 @@ class ApiServices {
 
   Future<String?> createOrder({
     required List<ItemBrief> items,
-    required int useVpoint,
-    required int useBalance,
+    required int? useVpoint,
+    required int? useBalance,
     required String giftEmail,
   }) async {
     final String apiUrl = 'https://api.vouchee.shop/api/v1/order/create_order';
@@ -578,7 +587,7 @@ class ApiServices {
         "use_balance": useBalance,
         "gift_email": giftEmail
       });
-      print('order use balance==> ${useBalance}');
+      print('order use balance==> $useBalance');
 
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -872,28 +881,54 @@ class ApiServices {
       String? name, String? phoneNumber, String? image) async {
     String apiUrl = 'https://api.vouchee.shop/api/v1/user/update_user';
     final url = Uri.parse(apiUrl);
+    if (image == null) {
+      String base64Images = "";
+      try {
+        final response = await http.put(
+          url,
+          headers: {
+            'Content-Type': 'application/json-pacth+json',
+            'Authorization': 'Bearer $auth'
+          },
+          body: jsonEncode({
+            'name': name,
+            'phoneNumber': phoneNumber,
+            'image': base64Images,
+          }),
+        );
 
-    try {
-      final response = await http.put(
-        url,
-        headers: {
-          'Content-Type': 'application/json-pacth+json',
-          'Authorization': 'Bearer $auth'
-        },
-        body: jsonEncode({
-          'name': name,
-          'phoneNumber': phoneNumber,
-          'image': image,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print('ok');
-      } else {
-        print('false');
+        if (response.statusCode == 200) {
+          print('ok');
+        } else {
+          print('false');
+        }
+      } catch (e) {
+        throw Exception("Error fetching data: $e");
       }
-    } catch (e) {
-      throw Exception("Error fetching data: $e");
+    } else {
+      String? base64Images = await _encodeImageToBase64(image);
+      try {
+        final response = await http.put(
+          url,
+          headers: {
+            'Content-Type': 'application/json-pacth+json',
+            'Authorization': 'Bearer $auth'
+          },
+          body: jsonEncode({
+            'name': name,
+            'phoneNumber': phoneNumber,
+            'image': base64Images,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          print('ok');
+        } else {
+          print('false');
+        }
+      } catch (e) {
+        throw Exception("Error fetching data: $e");
+      }
     }
   }
 
@@ -935,7 +970,7 @@ class ApiServices {
     final body = {
       "orderId": rating.orderId,
       "modalId": rating.modalId,
-      "medias": rating.medias.map((media) => {"url": media.url}).toList(),
+      // "medias": rating.medias.map((media) => {"url": media.url}).toList(),
       "qualityStar": rating.qualityStar,
       "serviceStar": rating.serviceStar,
       "sellerStar": rating.sellerStar,
@@ -990,7 +1025,7 @@ class ApiServices {
 
   Future<List<NotificationReceiver>> getNotification() async {
     final url = Uri.parse(
-        'https://api.vouchee.shop/api/v1/notification/get_receiver_notifications?pageSize=50');
+        'https://api.vouchee.shop/api/v1/notification/get_receiver_notifications?pageSize=99');
 
     try {
       final headers = {
@@ -1013,6 +1048,58 @@ class ApiServices {
       throw Exception("Error fetching order data: $e");
     }
   }
+
+  Future<bool> markSeenNotification(String notificationId) async {
+    final url = Uri.parse(
+        'https://api.vouchee.shop/api/v1/notification/mark_seen_notification/${notificationId}');
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $auth',
+      };
+      final body = jsonEncode({
+        'id': notificationId,
+      });
+
+      final response = await http.put(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        // Decode the response body
+        return true;
+      } else {
+        throw Exception("Failed to mark notificaiton");
+      }
+    } catch (e) {
+      throw Exception("Failed to mark notificaiton");
+    }
+  }
+  // Future<List<Refund>> getRefundRequest() async {
+  //   final url = Uri.parse(
+  //       'https://api.vouchee.shop/api/v1/refundRequest/get_buyer_refund_request?pageSize=99');
+
+  //   try {
+  //     final headers = {
+  //       'Content-Type': 'application/json',
+  //       'Authorization': 'Bearer $auth',
+  //     };
+
+  //     final response = await http.get(url, headers: headers);
+
+  //     if (response.statusCode == 200) {
+  //       // Decode the response body
+  //       List<dynamic> jsonData = json.decode(response.body)['results'];
+
+  //       print(jsonData);
+  //       return jsonData.map((refund) => Refund.fromJson(refund)).toList();
+  //     } else {
+  //       throw Exception(
+  //           "Failed to fetch refund data: ${response.reasonPhrase}");
+  //     }
+  //   } catch (e) {
+  //     throw Exception("Error fetching refunds data: $e");
+  //   }
+  // }
 
   Future<List<BuyerWalletTransaction>> fetchBuyerTransaction() async {
     final url = Uri.parse(
@@ -1041,38 +1128,75 @@ class ApiServices {
     }
   }
 
-  Future<void> refund(String image, String voucherCodeId, String content,
-      int lon, int lat) async {
-    final String apiUrl =
+  Future<bool> refundVoucherCode(
+    List<String> imagePaths,
+    String voucherCodeId,
+    String content,
+    num? latitude,
+    num? longitude,
+  ) async {
+    if (latitude == null ||
+        longitude == null ||
+        imagePaths.isEmpty ||
+        content.isEmpty) {
+      print('Missing required data');
+      return false;
+    }
+    final apiUrl =
         'https://api.vouchee.shop/api/v1/refundRequest/create_refund_request';
-    final url = Uri.parse(apiUrl);
+    // Convert images to Base64
+    List<String> base64Images = await _encodeImagesToBase64(imagePaths);
 
-    // Prepare the request body
-    final body = {
-      image: 'image',
-      voucherCodeId: 'voucherCodeId',
-      content: 'content',
-      lon: 'lon',
-      lat: 'lat'
+    // Prepare request body
+    final requestBody = {
+      "images": base64Images,
+      "voucherCodeId": voucherCodeId,
+      "content": content,
+      "lon": longitude,
+      "lat": latitude,
     };
 
     try {
+      // Make POST request
       final response = await http.post(
-        url,
+        Uri.parse(apiUrl),
         headers: {
           'Authorization': 'Bearer $auth',
           "Content-Type": "application/json",
         },
-        body: jsonEncode(body),
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {
-        print("refund ok");
+        print('Data successfully sent');
+        return true;
       } else {
-        print("refund fail");
+        print('Failed to send data: ${response.statusCode}');
+        return false;
       }
     } catch (e) {
-      throw ("Error during API call: $e");
+      print('Error sending data: $e');
+      return false;
+    }
+  }
+
+  // Helper method to encode images to Base64
+  Future<List<String>> _encodeImagesToBase64(List<String> imagePaths) async {
+    List<String> base64Images = [];
+    for (String path in imagePaths) {
+      final bytes = await File(path).readAsBytes();
+      base64Images.add(base64Encode(bytes));
+    }
+    return base64Images;
+  }
+
+  Future<String> _encodeImageToBase64(String imagePath) async {
+    try {
+      final bytes = await File(imagePath).readAsBytes();
+      String base64Image = base64Encode(bytes);
+      return base64Image;
+    } catch (e) {
+      throw Exception("Error encoding image: $e");
     }
   }
 }

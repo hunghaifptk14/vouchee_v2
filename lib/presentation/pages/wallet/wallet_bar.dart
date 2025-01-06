@@ -25,11 +25,20 @@ class _WalletBarState extends State<WalletBar> {
   }
 
   Future<void> fetchWalletData() async {
-    Wallet wallet = await getwallet.fetchWallet();
+    try {
+      // Fetch the wallet data
+      Wallet wallet = await getwallet.fetchWallet();
 
-    setState(() {
-      balance = wallet.totalBalance;
-    });
+      // Check if the widget is still mounted before calling setState
+      if (mounted) {
+        setState(() {
+          balance = wallet.totalBalance;
+        });
+      }
+    } catch (e) {
+      // Handle error if necessary
+      print("Error fetching wallet data: $e");
+    }
   }
 
   String _currencyFormat(int amount) {

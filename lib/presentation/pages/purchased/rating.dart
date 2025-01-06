@@ -35,7 +35,7 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
     Rating rating = Rating(
       orderId: widget.orderId,
       modalId: widget.modalId,
-      medias: [Media(url: "string")],
+      // medias: [Media(url: "string")],
       qualityStar: qualityStar,
       serviceStar: serviceStar,
       sellerStar: sellerStar,
@@ -113,7 +113,7 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  await _submitRating;
+                  _submitRating;
                   Navigator.push(
                       context,
                       MaterialPageRoute(

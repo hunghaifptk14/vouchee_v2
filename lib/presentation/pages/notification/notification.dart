@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/notification.dart';
 import 'package:vouchee/networking/api_request.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -13,10 +15,25 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage> {
   late Future<List<NotificationReceiver>> futureNoti;
   ApiServices apiServices = ApiServices();
+  bool isChecked = false;
   @override
   void initState() {
     super.initState();
     futureNoti = apiServices.getNotification();
+  }
+
+  Future<void> handleMarkNotification(String id, bool unCheck) async {
+    try {
+      await apiServices.markSeenNotification(id);
+      if (unCheck) {
+        setState(() {
+          isChecked = true;
+        });
+      }
+    } catch (e) {
+      TopSnackbar.show(context, 'Check thất bại',
+          backgroundColor: AppColor.warning);
+    }
   }
 
   String _DateTimeformat(String dateString) {
@@ -55,24 +72,37 @@ class _NotificationPageState extends State<NotificationPage> {
               return ListView.builder(
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
-                  NotificationReceiver message = messages[index];
-                  return ListTile(
-                    titleAlignment: ListTileTitleAlignment.top,
-                    leading: Icon(Icons.notifications, color: Colors.blue),
-                    title: Text(
-                      message.title,
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    subtitle: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _DateTimeformat(message.createDate.toString()),
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        Text(message.body),
-                      ],
+                  NotificationReceiver message =
+                      messages.reversed.toList()[index];
+                  return GestureDetector(
+                    onTap: () {
+                      if (message.seen == false) {
+                        handleMarkNotification(message.id, message.seen);
+                      } else {
+                        null;
+                      }
+                      print(message.seen);
+                    },
+                    child: ListTile(
+                      titleAlignment: ListTileTitleAlignment.top,
+                      leading: message.seen == true
+                          ? Icon(Icons.notifications, color: AppColor.lightGrey)
+                          : Icon(Icons.notifications, color: AppColor.primary),
+                      title: Text(
+                        message.title,
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      subtitle: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _DateTimeformat(message.createDate.toString()),
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          Text(message.body),
+                        ],
+                      ),
                     ),
                   );
                 },

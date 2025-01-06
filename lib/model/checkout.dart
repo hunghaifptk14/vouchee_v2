@@ -52,7 +52,7 @@ class Checkout {
 class Seller {
   final String sellerId;
   final String sellerName;
-  final String sellerImage;
+  final String? sellerImage;
   final List<Modal> modals;
 
   Seller({
@@ -68,7 +68,7 @@ class Seller {
     return Seller(
       sellerId: json['sellerId'],
       sellerName: json['sellerName'],
-      sellerImage: json['sellerImage'],
+      sellerImage: json['sellerImage'] ?? '',
       modals: modalsList,
     );
   }
