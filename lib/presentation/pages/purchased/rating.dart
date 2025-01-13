@@ -29,8 +29,6 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
   final TextEditingController commentController = TextEditingController();
 
   Future<void> _submitRating() async {
-    print(widget.modalId);
-    print(widget.orderId);
     // Collect data for submission
     Rating rating = Rating(
       orderId: widget.orderId,

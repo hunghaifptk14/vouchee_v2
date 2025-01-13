@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
@@ -25,6 +26,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
   late Future<List<MyVoucher>?> futureMyVoucher;
   late Future<List<MyVoucher>?> futureMyUsedVoucher;
   late Future<List<MyVoucher>?> futureMyPendingVoucher;
+  String newCode = '';
   late Future<Message> message;
 
   ApiServices apiServices = ApiServices();
@@ -43,12 +45,13 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
     });
   }
 
-  // void updateCode(status) {
-  //   final updateStatus = 'USED';
-  //   setState(() {
-  //     status == updateStatus;
-  //   });
-  // }
+  Future<String> getVouchercode(String codeId) async {
+    String code = await apiServices.getVoucherCodeById(codeId);
+    setState(() {
+      newCode = code;
+    });
+    return newCode;
+  }
 
   bool compareDate(String targetDateString) {
     final now = DateTime.now();
@@ -333,57 +336,80 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                                                                       child: Padding(
                                                                                                     padding: const EdgeInsets.symmetric(horizontal: 16),
                                                                                                     child: Container(
-                                                                                                        height: 215,
-                                                                                                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(15))),
-                                                                                                        child: QrImageView(
-                                                                                                          data: voucherCodes.image!,
+                                                                                                        height: 250,
+                                                                                                        width: 300,
+                                                                                                        decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))),
+                                                                                                        child: Center(
+                                                                                                          child: QrImageView(
+                                                                                                            data: newCode,
+                                                                                                          ),
                                                                                                         )),
                                                                                                     //Test
                                                                                                   )),
+                                                                                                  SizedBox(
+                                                                                                    height: 16,
+                                                                                                  ),
                                                                                                   Center(
                                                                                                     child: SizedBox(
                                                                                                       width: 300,
-                                                                                                      child: Row(
-                                                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                                      child: Column(
                                                                                                         children: [
-                                                                                                          ElevatedButton(
-                                                                                                            onPressed: () async {
-                                                                                                              final path = '${Directory.systemTemp.path}/refund-image.jpg';
-                                                                                                              await Dio().download(
-                                                                                                                voucherCodes.image.toString(),
-                                                                                                                path,
-                                                                                                              );
-                                                                                                              //Test
-                                                                                                              // await Dio().download(
-                                                                                                              //   'https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg',
-                                                                                                              //   path,
-                                                                                                              // );
-                                                                                                              await Gal.putImage(path);
-                                                                                                              TopSnackbar.show(context, 'Đã tải ảnh');
-                                                                                                            },
-                                                                                                            child: SizedBox(
-                                                                                                              width: 100,
-                                                                                                              child: Row(
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Icon(
-                                                                                                                    Icons.download_outlined,
-                                                                                                                    color: AppColor.white,
-                                                                                                                  ),
-                                                                                                                  SizedBox(
-                                                                                                                    width: 8,
-                                                                                                                  ),
-                                                                                                                  Text(
-                                                                                                                    'Tải ảnh',
-                                                                                                                    style: TextStyle(
-                                                                                                                      color: AppColor.white,
-                                                                                                                      fontSize: 11,
+                                                                                                          Row(
+                                                                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                                            children: [
+                                                                                                              ElevatedButton(
+                                                                                                                  onPressed: () {
+                                                                                                                    Clipboard.setData(ClipboardData(text: newCode));
+                                                                                                                    newCode != '' ? TopSnackbar.show(context, 'Đã copy mã code', backgroundColor: AppColor.success) : TopSnackbar.show(context, 'Đã xảy ra lỗi khi copy mã code', backgroundColor: AppColor.warning);
+                                                                                                                  },
+                                                                                                                  child: Text(
+                                                                                                                    "Copy mã code",
+                                                                                                                    style: TextStyle(color: AppColor.white),
+                                                                                                                  )),
+                                                                                                              SizedBox(
+                                                                                                                width: 8,
+                                                                                                              ),
+                                                                                                              Expanded(
+                                                                                                                child: ElevatedButton(
+                                                                                                                  onPressed: () async {
+                                                                                                                    final path = '${Directory.systemTemp.path}/code-image.jpg';
+                                                                                                                    await Dio().download(
+                                                                                                                      newCode,
+                                                                                                                      // 'https://ibb.co/NjCTCvT',
+                                                                                                                      path,
+                                                                                                                    );
+
+                                                                                                                    await Gal.putImage(path);
+                                                                                                                    TopSnackbar.show(context, 'Đã tải ảnh');
+                                                                                                                  },
+                                                                                                                  child: SizedBox(
+                                                                                                                    child: Row(
+                                                                                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                                      children: [
+                                                                                                                        Icon(
+                                                                                                                          Icons.download_outlined,
+                                                                                                                          color: AppColor.white,
+                                                                                                                        ),
+                                                                                                                        SizedBox(
+                                                                                                                          width: 8,
+                                                                                                                        ),
+                                                                                                                        Text(
+                                                                                                                          'Tải ảnh',
+                                                                                                                          style: TextStyle(
+                                                                                                                            color: AppColor.white,
+                                                                                                                            fontSize: 11,
+                                                                                                                          ),
+                                                                                                                        ),
+                                                                                                                      ],
                                                                                                                     ),
                                                                                                                   ),
-                                                                                                                ],
+                                                                                                                ),
                                                                                                               ),
-                                                                                                            ),
+                                                                                                            ],
+                                                                                                          ),
+                                                                                                          SizedBox(
+                                                                                                            height: 24,
                                                                                                           ),
                                                                                                           ElevatedButton(
                                                                                                             style: ButtonStyle(
@@ -398,20 +424,19 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                                                                                           )));
                                                                                                             },
                                                                                                             child: SizedBox(
-                                                                                                              width: 100,
                                                                                                               child: Row(
                                                                                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                                                                                 crossAxisAlignment: CrossAxisAlignment.center,
                                                                                                                 children: [
                                                                                                                   Icon(
-                                                                                                                    Icons.download_outlined,
+                                                                                                                    Icons.error_outlined,
                                                                                                                     color: AppColor.white,
                                                                                                                   ),
                                                                                                                   SizedBox(
                                                                                                                     width: 8,
                                                                                                                   ),
                                                                                                                   Text(
-                                                                                                                    'Báo lỗi',
+                                                                                                                    'Báo lỗi voucher',
                                                                                                                     style: TextStyle(
                                                                                                                       color: AppColor.white,
                                                                                                                       fontSize: 11,
@@ -431,6 +456,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                                                           });
                                                                                       // apiServices.updateVoucherCodeStatus(voucherCodes.id);
                                                                                       // updateCode(voucherCodes.status);
+                                                                                      getVouchercode(voucherCodes.id);
                                                                                       // apiServices.getVoucherCodeById(voucherCodes.id);
                                                                                     },
                                                                                     child: Text('Lấy mã', style: TextStyle(color: AppColor.white)),

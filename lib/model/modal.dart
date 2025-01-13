@@ -26,32 +26,34 @@ class Modal {
   final double averageRating;
   bool selected = false;
   final String? shopPromotionId;
-
-  Modal(
-      {required this.id,
-      required this.voucherId,
-      required this.brandId,
-      required this.brandName,
-      required this.brandImage,
-      required this.title,
-      required this.quantity,
-      required this.stock,
-      required this.originalPrice,
-      required this.sellPrice,
-      required this.shopDiscountMoney,
-      required this.shopDiscountPercent,
-      required this.discountPrice,
-      required this.salePrice,
-      required this.totalUnitPrice,
-      required this.totalDiscountPrice,
-      required this.totalFinalPrice,
-      required this.status,
-      required this.image,
-      required this.startDate,
-      required this.endDate,
-      required this.averageRating,
-      required this.shopPromotionId,
-      this.selected = false});
+  // final List<ModalRating> ratings;
+  Modal({
+    required this.id,
+    required this.voucherId,
+    required this.brandId,
+    required this.brandName,
+    required this.brandImage,
+    required this.title,
+    required this.quantity,
+    required this.stock,
+    required this.originalPrice,
+    required this.sellPrice,
+    required this.shopDiscountMoney,
+    required this.shopDiscountPercent,
+    required this.discountPrice,
+    required this.salePrice,
+    required this.totalUnitPrice,
+    required this.totalDiscountPrice,
+    required this.totalFinalPrice,
+    required this.status,
+    required this.image,
+    required this.startDate,
+    required this.endDate,
+    required this.averageRating,
+    required this.shopPromotionId,
+    this.selected = false,
+    // required this.ratings,
+  });
 
   // Factory constructor to create a Modal instance from JSON
   factory Modal.fromJson(Map<String, dynamic> json) {
@@ -79,6 +81,9 @@ class Modal {
       endDate: json['endDate'] ?? '',
       averageRating: (json['averageRating'] ?? 0).toDouble(),
       shopPromotionId: json['shopPromotionId'] ?? '',
+      // ratings: (json['ratings'] as List)
+      //     .map((ratingJson) => ModalRating.fromJson(ratingJson))
+      //     .toList(),
     );
   }
 
@@ -106,6 +111,7 @@ class Modal {
       'startDate': startDate,
       'averageRating': averageRating,
       'endDate': endDate,
+      // 'ratings': ratings?.map((rating) => rating.toJson()).toList(),
     };
   }
 
@@ -117,5 +123,91 @@ class Modal {
   @override
   String toString() {
     return 'Modal(id: $id, voucherId: $voucherId, brandId: $brandId, brandName: $brandName, brandImage: $brandImage, title: $title, quantity: $quantity, stock: $stock, originalPrice: $originalPrice, sellPrice: $sellPrice, shopDiscountMoney: $shopDiscountMoney, shopDiscountPercent: $shopDiscountPercent, discountPrice: $discountPrice, salePrice: $salePrice, totalUnitPrice: $totalUnitPrice, totalDiscountPrice: $totalDiscountPrice, totalFinalPrice: $totalFinalPrice, status: $status, image: $image, startDate: $startDate, endDate: $endDate, averageRating: $averageRating, selected: $selected, shopPromotionId: $shopPromotionId)';
+  }
+}
+
+class ModalRating {
+  final String orderId;
+  final String modalId;
+  final double totalStar;
+  final int qualityStar;
+  final int serviceStar;
+  final int sellerStar;
+  final String comment;
+  final String? rep;
+  final DateTime createDate;
+  final List<Media> medias;
+
+  ModalRating({
+    required this.orderId,
+    required this.modalId,
+    required this.totalStar,
+    required this.qualityStar,
+    required this.serviceStar,
+    required this.sellerStar,
+    required this.comment,
+    this.rep,
+    required this.createDate,
+    required this.medias,
+  });
+
+  factory ModalRating.fromJson(Map<String, dynamic> json) {
+    return ModalRating(
+      orderId: json['orderId'],
+      modalId: json['modalId'],
+      totalStar: json['totalStar'].toDouble(),
+      qualityStar: json['qualityStar'],
+      serviceStar: json['serviceStar'],
+      sellerStar: json['sellerStar'],
+      comment: json['comment'],
+      rep: json['rep'],
+      createDate: DateTime.parse(json['createDate']),
+      medias: (json['medias'] as List)
+          .map((mediaJson) => Media.fromJson(mediaJson))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'orderId': orderId,
+      'modalId': modalId,
+      'totalStar': totalStar,
+      'qualityStar': qualityStar,
+      'serviceStar': serviceStar,
+      'sellerStar': sellerStar,
+      'comment': comment,
+      'rep': rep,
+      'createDate': createDate.toIso8601String(),
+      'medias': medias.map((media) => media.toJson()).toList(),
+    };
+  }
+}
+
+class Media {
+  final String id;
+  final String url;
+  final int index;
+
+  Media({
+    required this.id,
+    required this.url,
+    required this.index,
+  });
+
+  factory Media.fromJson(Map<String, dynamic> json) {
+    return Media(
+      id: json['id'],
+      url: json['url'],
+      index: json['index'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+      'index': index,
+    };
   }
 }

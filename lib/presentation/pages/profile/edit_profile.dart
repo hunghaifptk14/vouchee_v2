@@ -6,6 +6,8 @@ import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/profile/profile_page.dart'; // Make sure to import your HomePage
 
 class EditProfile extends StatefulWidget {
+  const EditProfile({super.key});
+
   @override
   _EditProfileState createState() => _EditProfileState();
 }

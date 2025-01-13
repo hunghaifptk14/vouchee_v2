@@ -16,7 +16,6 @@ import 'package:vouchee/model/notification.dart';
 import 'package:vouchee/model/order.dart';
 import 'package:vouchee/model/promotion.dart';
 import 'package:vouchee/model/rating.dart';
-import 'package:vouchee/model/refund.dart';
 import 'package:vouchee/model/transactions.dart';
 import 'package:vouchee/model/user.dart';
 import 'package:vouchee/model/voucher.dart';
@@ -1000,7 +999,7 @@ class ApiServices {
     }
   }
 
-  Future<MyVoucher> getVoucherCodeById(String codeId) async {
+  Future<String> getVoucherCodeById(String codeId) async {
     final String apiUrl =
         'https://api.vouchee.shop/api/v1/myVoucher/get_voucher_code/$codeId';
 
@@ -1014,7 +1013,9 @@ class ApiServices {
       );
 
       if (response.statusCode == 200) {
-        return MyVoucher.fromJson(json.decode(response.body));
+        final String data = json.decode(response.body)['newCode'];
+        print(data);
+        return data;
       } else {
         throw Exception('Error code id ');
       }
@@ -1051,7 +1052,7 @@ class ApiServices {
 
   Future<bool> markSeenNotification(String notificationId) async {
     final url = Uri.parse(
-        'https://api.vouchee.shop/api/v1/notification/mark_seen_notification/${notificationId}');
+        'https://api.vouchee.shop/api/v1/notification/mark_seen_notification/$notificationId');
 
     try {
       final headers = {

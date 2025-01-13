@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:vouchee/model/voucher_code.dart';
 
 class Media {

@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
-import 'package:vouchee/presentation/widgets/appBar/top_app_bar.dart';
 import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class RefundPage extends StatefulWidget {
@@ -202,7 +201,7 @@ class _RefundPageState extends State<RefundPage> {
                         }).toList(),
                       ),
                     )
-                  : Text('No images selected'),
+                  : Center(child: Text('Không có ảnh nào được chọn')),
               SizedBox(height: 16),
               // Image picker button
               Center(
@@ -238,7 +237,6 @@ class _RefundPageState extends State<RefundPage> {
                               );
                             })
                         : null;
-                    ;
                   },
                   child: SizedBox(
                     width: 100,

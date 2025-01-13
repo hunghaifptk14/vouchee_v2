@@ -11,7 +11,6 @@ import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/checkout.dart';
 import 'package:vouchee/model/item_brief.dart';
 import 'package:vouchee/model/user.dart';
-import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
 import 'package:vouchee/presentation/pages/wallet/wallet.dart';

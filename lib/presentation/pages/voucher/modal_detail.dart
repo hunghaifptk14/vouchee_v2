@@ -34,6 +34,20 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
     futureModal = apiService.fetchModal(); // Fetch data on init
   }
 
+  String _DateTimeformat(String dateString) {
+    try {
+      DateTime parsedDate = DateTime.parse(dateString);
+
+      String formattedDate =
+          DateFormat('HH:mm - dd/MM/yyyy').format(parsedDate);
+
+      return formattedDate;
+    } catch (e) {
+      // Handle parsing errors
+      return "Lỗi thông tin";
+    }
+  }
+
   String _currencyFormat(double amount) {
     String format = NumberFormat.currency(
       locale: 'vi_VN',
@@ -46,10 +60,10 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
   Future<void> _addToCart(String modalId) async {
     bool success = await cartService.addToCart(modalId);
     if (success) {
-      TopSnackbar.show(context, 'Đã thêm sản phẩm vào giỏ hàng',
+      TopSnackbar.show(context, 'Đã thêm voucher vào giỏ hàng',
           backgroundColor: AppColor.success);
     } else {
-      TopSnackbar.show(context, 'Không thêm được sản phẩm',
+      TopSnackbar.show(context, 'Không thêm được voucher',
           backgroundColor: AppColor.warning);
     }
   }
@@ -154,10 +168,6 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                         SizedBox(
                           width: 4,
                         ),
-                        // ...widget.modal.address.map((address) => Text(
-                        //       '📌 ${address.name} ',
-                        //       style: TextStyle(fontSize: 14),
-                        //     )),
                         Text(
                           widget.modal.stock.toInt().toString(),
                           style: TextStyle(fontWeight: FontWeight.w500),
@@ -214,6 +224,77 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                   ],
                 ),
               ),
+              // Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: 16),
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.start,
+              //     children: [
+              //       ...widget.modal.ratings.map((rating) => Column(
+              //             children: [
+              //               SizedBox(
+              //                 width: double.infinity,
+              //                 child: Card(
+              //                   margin: EdgeInsets.all(8),
+              //                   child: Padding(
+              //                     padding: const EdgeInsets.all(16.0),
+              //                     child: Column(
+              //                       crossAxisAlignment:
+              //                           CrossAxisAlignment.start,
+              //                       children: [
+              //                         // Rating Stars
+              //                         Row(
+              //                           children: [
+              //                             Icon(
+              //                               Icons.star,
+              //                               color: Colors.amber,
+              //                               size: 20,
+              //                             ),
+              //                             SizedBox(width: 10),
+              //                             Text("${rating.totalStar}",
+              //                                 style: TextStyle(fontSize: 16)),
+              //                           ],
+              //                         ),
+              //                         const SizedBox(height: 10),
+
+              //                         // Sub-ratings (Quality, Service, Seller)
+
+              //                         const SizedBox(height: 10),
+
+              //                         // Comment Text
+              //                         Text("Bình luận: ${rating.comment}",
+              //                             style: TextStyle(fontSize: 14)),
+              //                         const SizedBox(height: 10),
+
+              //                         // Media (if any)
+              //                         // if (rating.medias != null &&
+              //                         //     rating.medias!.isNotEmpty)
+              //                         //   Column(
+              //                         //     children: rating.medias!.map((media) {
+              //                         //       return Padding(
+              //                         //         padding: const EdgeInsets.only(
+              //                         //             bottom: 8.0),
+              //                         //         child: Image.network(media.url),
+              //                         //       );
+              //                         //     }).toList(),
+              //                         //   ),
+              //                         // const SizedBox(height: 10),
+
+              //                         // Created Date
+              //                         Text(
+              //                           _DateTimeformat(
+              //                               rating.createDate.toString()),
+              //                           style: TextStyle(color: Colors.grey),
+              //                         ),
+              //                       ],
+              //                     ),
+              //                   ),
+              //                 ),
+              //               )
+              //             ],
+              //           )),
+              //     ],
+              //   ),
+              // )
             ],
           ),
         ));
