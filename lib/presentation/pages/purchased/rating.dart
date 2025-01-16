@@ -27,9 +27,15 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
   int sellerStar = 0;
   String comment = '';
   final TextEditingController commentController = TextEditingController();
+  bool isSuccess = false;
 
   Future<void> _submitRating() async {
     // Collect data for submission
+    if (qualityStar == 0 || serviceStar == 0 || sellerStar == 0) {
+      TopSnackbar.show(context, 'Vui lòng chọn tất cả các đánh giá',
+          backgroundColor: AppColor.warning);
+      return; // Exit if any rating is missing
+    }
     Rating rating = Rating(
       orderId: widget.orderId,
       modalId: widget.modalId,
@@ -44,12 +50,17 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
     bool success = await apiServices.updateRating(rating);
 
     if (success) {
-      print('object');
       TopSnackbar.show(context, 'Tạo rating thành công',
           backgroundColor: AppColor.success);
+      setState(() {
+        isSuccess = true;
+      });
     } else {
       TopSnackbar.show(context, 'Lỗi khi đánh giá',
           backgroundColor: AppColor.warning);
+      setState(() {
+        isSuccess = false;
+      });
     }
   }
 
@@ -111,12 +122,14 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  _submitRating;
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              const PurchedVoucher()));
+                  _submitRating();
+                  isSuccess
+                      ? Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  const PurchedVoucher()))
+                      : null;
                 },
                 child: Text("Hoàn tất"),
               ),

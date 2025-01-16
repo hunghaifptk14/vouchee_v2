@@ -1,7 +1,9 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/profile/profile_page.dart'; // Make sure to import your HomePage
 
@@ -16,18 +18,9 @@ class _EditProfileState extends State<EditProfile> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   String? _imageUrl;
-  final ImagePicker _picker = ImagePicker();
   ApiServices apiServices = ApiServices();
 
   // Pick an image from the gallery
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imageUrl = pickedFile.path;
-      });
-    }
-  }
 
   // Convert the image to Base64
   Future<String> _encodeImageToBase64(String imagePath) async {
@@ -50,8 +43,6 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   // Regex to validate Vietnamese phone number
   final String phoneNumberPattern = r'^(0[3|5|7|8|9])[0-9]{8}$';
 
@@ -63,9 +54,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Update Buyer Info'),
-      ),
+      appBar: AppBar(title: Text('Cập nhật thông tin')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -74,21 +63,21 @@ class _EditProfileState extends State<EditProfile> {
             // Name TextField
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: 'Họ tên'),
             ),
             SizedBox(height: 16),
 
             // Phone Number TextField
             TextFormField(
               controller: _phoneController,
-              decoration: InputDecoration(labelText: 'Phone Number'),
+              decoration: InputDecoration(labelText: 'Số điện thoại'),
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your phone number';
+                  return 'Vui lòng nhập số điện thoại';
                 }
                 if (!isValidPhoneNumber(value)) {
-                  return 'Please enter a valid Vietnamese phone number';
+                  return 'Số điện thoại không tồn tại. vui lòng nhập lại';
                 }
                 return null;
               },
@@ -116,7 +105,7 @@ class _EditProfileState extends State<EditProfile> {
             //       )
             //     : SizedBox(),
 
-            // SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Update Button
             Center(
@@ -136,7 +125,10 @@ class _EditProfileState extends State<EditProfile> {
                   // After successful update, navigate to the home page
                   _navigateToHomePage();
                 },
-                child: Text('Update Info'),
+                child: Text(
+                  'Cập nhật',
+                  style: TextStyle(color: AppColor.white),
+                ),
               ),
             ),
           ],

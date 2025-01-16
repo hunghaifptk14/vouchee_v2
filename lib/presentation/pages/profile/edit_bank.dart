@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -162,6 +164,7 @@ class _EditBankState extends State<EditBank> {
                     child: SizedBox(
                       height: 240,
                       width: 240,
+                      // ignore: unnecessary_null_comparison
                       child: numberController.text == null &&
                               selectedBankShortName == null
                           ? Image.network(
@@ -182,6 +185,7 @@ class _EditBankState extends State<EditBank> {
                           path,
                         );
                         await Gal.putImage(path);
+                        // ignore: use_build_context_synchronously
                         TopSnackbar.show(context, 'Đã tải ảnh',
                             backgroundColor: AppColor.success);
                       },

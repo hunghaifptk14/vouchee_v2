@@ -45,10 +45,9 @@ dependencies:
   path_provider: ^2.0.15
   intl: ^0.19.0
   carousel_slider: ^5.0.0
-  syncfusion_flutter_barcodes: ^27.2.5
   image_picker: ^1.1.2
   qr_flutter: ^4.1.0
-    
+  barcode_widget: ^2.0.2
   # google_maps_flutter: ^2.9.0
   # custom_info_window: ^1.0.1
   # The following adds the Cupertino Icons font to your application.
@@ -56,7 +55,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_svg: ^2.0.14
   flutter_image: ^4.1.11
-  
+  # flutter_launcher_icons: "^0.14.1"
   # intl: ^0.17.0
   # currency_text_input_formatter: ^2.2.5
 
@@ -64,6 +63,7 @@ dependencies:
 #   intl: ^0.17.0
 
 dev_dependencies:
+  flutter_launcher_icons: "^0.14.1"
   flutter_test:
     sdk: flutter
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -72,13 +72,15 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  flutter_launcher_icons: "^0.14.1"
+  
 
 flutter_launcher_icons:
-  android: true
-
-  # image_path: "assets/vectors/Vouchee_logo_blue.svg"
-  image_path: "assets/images/coupon.png"
+  android: "app_icon"
+  android_icon_size: 72
+  image_path_android: "assets/images/voucher_72px.png"
+  min_sdk_android: 24
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/voucher_72px.png"
 
 
 # For information on the generic Dart part of this file, see the

@@ -123,7 +123,8 @@ class _ModalListState extends State<ModalList> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          _currencyFormat(modal.sellPrice),
+                                          _currencyFormat(
+                                              modal.sellPrice.toDouble()),
                                           style: TextStyle(
                                               fontSize: 11,
                                               color: Colors.green),

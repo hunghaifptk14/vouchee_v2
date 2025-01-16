@@ -1,12 +1,9 @@
-import 'dart:typed_data';
-import 'dart:ui';
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter/rendering.dart';
-import 'dart:io';
 
 import 'package:vouchee/presentation/pages/login/login.dart';
 

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -127,14 +129,12 @@ class _RefundPageState extends State<RefundPage> {
     );
 
     if (success) {
-      // Handle success response (you can show a success message or navigate)
       TopSnackbar.show(context, 'Gửi yêu cầu thành công',
           backgroundColor: AppColor.success);
       setState(() {
         isSuccess = true;
       });
     } else {
-      // Handle failure response (show an error message)
       TopSnackbar.show(context, 'Gửi yêu cầu thất bại',
           backgroundColor: AppColor.warning);
     }

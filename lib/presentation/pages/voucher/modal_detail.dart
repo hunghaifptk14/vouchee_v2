@@ -126,7 +126,7 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                       height: 8,
                     ),
                     Text(
-                      _currencyFormat(widget.modal.sellPrice),
+                      _currencyFormat(widget.modal.sellPrice.toDouble()),
                       style: const TextStyle(
                           fontSize: 16,
                           color: Colors.green,

@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:vouchee/model/address.dart';
 import 'package:vouchee/model/category.dart';
 import 'package:vouchee/model/modal.dart';
@@ -21,7 +22,8 @@ class Voucher {
   final String brandImage;
   final Category categories;
   final Address address;
-  final List<Modal> modals; // Change 'modal' to 'modals'
+  final List<Modal> modals;
+  final bool isActive;
 
   Voucher({
     required this.id,
@@ -43,6 +45,7 @@ class Voucher {
     required this.categories,
     required this.address,
     required this.modals,
+    required this.isActive,
   });
 
   factory Voucher.fromJson(Map<String, dynamic> json) {
@@ -65,6 +68,7 @@ class Voucher {
         brandImage: json['brandImage'] ?? '',
         categories: Category.fromJson(json),
         address: Address.fromJson(json),
+        isActive: json['isActive'],
         modals: (json['modals'] as List<dynamic>?)
                 ?.map((modal) => Modal.fromJson(modal))
                 .toList() ??
@@ -89,6 +93,7 @@ class Voucher {
       'brandId': brandId,
       'brandName': brandName,
       'brandImage': brandImage,
+      'isActive': isActive,
       'categories': categories.toMap(),
       'address': address.toMap(),
       'modals':

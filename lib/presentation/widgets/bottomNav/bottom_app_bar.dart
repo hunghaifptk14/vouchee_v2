@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vouchee/core/configs/assets/app_vector.dart';
@@ -7,7 +6,6 @@ import 'package:vouchee/core/configs/theme/app_color.dart';
 // import 'package:vouchee/model/user.dart';
 import 'package:vouchee/presentation/pages/cart/cart_list.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
-import 'package:vouchee/presentation/pages/login/google_service.dart';
 import 'package:vouchee/presentation/pages/profile/profile_page.dart';
 import 'package:vouchee/presentation/pages/suggestion/suggestion_page.dart';
 import 'package:vouchee/presentation/pages/purchased/Purchased_voucher.dart';
@@ -25,10 +23,8 @@ class BottomAppBarcustom extends StatefulWidget {
 
 class _BottomAppBarcustomState extends State<BottomAppBarcustom> {
   // final GoogleSignInService _googleSignInService = GoogleSignInService();
-  final GoogleSignInService _authService = GoogleSignInService();
   @override
   Widget build(BuildContext context) {
-    User? user;
     return Container(
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(

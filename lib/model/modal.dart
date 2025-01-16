@@ -8,7 +8,7 @@ class Modal {
   final String brandName;
   final String brandImage;
   final String title;
-  int quantity;
+  int quantity; // Can be nullable, default to 0
   final int stock;
   final double originalPrice;
   double sellPrice;
@@ -26,7 +26,7 @@ class Modal {
   final double averageRating;
   bool selected = false;
   final String? shopPromotionId;
-  // final List<ModalRating> ratings;
+
   Modal({
     required this.id,
     required this.voucherId,
@@ -34,28 +34,25 @@ class Modal {
     required this.brandName,
     required this.brandImage,
     required this.title,
-    required this.quantity,
+    this.quantity = 0, // Default to 0 if null
     required this.stock,
     required this.originalPrice,
-    required this.sellPrice,
-    required this.shopDiscountMoney,
-    required this.shopDiscountPercent,
-    required this.discountPrice,
-    required this.salePrice,
-    required this.totalUnitPrice,
-    required this.totalDiscountPrice,
-    required this.totalFinalPrice,
+    this.sellPrice = 0.0, // Default to 0.0 if null
+    this.shopDiscountMoney = 0.0, // Default to 0.0 if null
+    this.shopDiscountPercent = 0.0, // Default to 0.0 if null
+    this.discountPrice = 0.0, // Default to 0.0 if null
+    this.salePrice = 0.0, // Default to 0.0 if null
+    this.totalUnitPrice = 0.0, // Default to 0.0 if null
+    this.totalDiscountPrice = 0.0, // Default to 0.0 if null
+    this.totalFinalPrice = 0.0, // Default to 0.0 if null
     required this.status,
     required this.image,
     required this.startDate,
     required this.endDate,
-    required this.averageRating,
-    required this.shopPromotionId,
-    this.selected = false,
-    // required this.ratings,
+    this.averageRating = 0.0, // Default to 0.0 if null
+    this.shopPromotionId,
   });
 
-  // Factory constructor to create a Modal instance from JSON
   factory Modal.fromJson(Map<String, dynamic> json) {
     return Modal(
       id: json['id'] ?? '',
@@ -64,10 +61,11 @@ class Modal {
       brandName: json['brandName'] ?? '',
       brandImage: json['brandImage'] ?? '',
       title: json['title'] ?? '',
-      quantity: json['quantity'] ?? 0,
-      stock: json['stock'],
-      originalPrice: (json['originalPrice'] ?? 0).toDouble(),
-      sellPrice: (json['sellPrice'] ?? 0).toDouble(),
+      quantity: json['quantity'] ?? 0, // Default to 0 if null
+      stock: json['stock'] ?? 0, // Ensure stock is always an int
+      originalPrice:
+          (json['originalPrice'] ?? 0).toDouble(), // Default to 0.0 if null
+      sellPrice: (json['sellPrice'] ?? 0).toDouble(), // Default to 0.0 if null
       shopDiscountMoney: (json['shopDiscountMoney'] ?? 0).toDouble(),
       shopDiscountPercent: (json['shopDiscountPercent'] ?? 0).toDouble(),
       discountPrice: (json['discountPrice'] ?? 0).toDouble(),
@@ -80,10 +78,7 @@ class Modal {
       startDate: json['startDate'] ?? '',
       endDate: json['endDate'] ?? '',
       averageRating: (json['averageRating'] ?? 0).toDouble(),
-      shopPromotionId: json['shopPromotionId'] ?? '',
-      // ratings: (json['ratings'] as List)
-      //     .map((ratingJson) => ModalRating.fromJson(ratingJson))
-      //     .toList(),
+      shopPromotionId: json['shopPromotionId'],
     );
   }
 
@@ -111,11 +106,12 @@ class Modal {
       'startDate': startDate,
       'averageRating': averageRating,
       'endDate': endDate,
-      // 'ratings': ratings?.map((rating) => rating.toJson()).toList(),
+      'shopPromotionId': shopPromotionId,
     };
   }
 
   String toJson() => json.encode(toMap());
+
   void toggleSelection() {
     selected = !selected;
   }

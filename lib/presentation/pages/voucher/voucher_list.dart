@@ -57,7 +57,9 @@ class _VoucherListState extends State<VoucherList> {
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(child: Text('Không có voucher nào.'));
             } else {
-              List<Voucher> vouchers = snapshot.data!;
+              List<Voucher> vouchers = snapshot.data!
+                  .where((voucher) => voucher.isActive == true)
+                  .toList();
 
               return GridView.builder(
                 physics: const NeverScrollableScrollPhysics(),

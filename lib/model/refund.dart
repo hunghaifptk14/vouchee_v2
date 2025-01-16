@@ -13,7 +13,7 @@ class Media {
 
   factory Media.fromJson(Map<String, dynamic> json) {
     return Media(
-      id: json['id'] ?? "Unknown",
+      id: json['id'] ?? "",
       url: json['url'] ?? "", // Empty string if null
       index: json['index'] ?? 0, // Default to 0 if null
     );
@@ -31,17 +31,15 @@ class Media {
 class Refund {
   final String id;
   final List<Media> medias;
-  final dynamic walletTransaction; // nullable type
   final List<VoucherCode> voucherCode;
   final String? reason;
   final String supplierName;
   final String status;
-  final DateTime createDate;
-  final DateTime expireTime;
+  final String createDate; // Change to String
+  final String expireTime; // Change to String
   final String createBy;
-  final String? updateDate;
-  final String? updateBy;
-  final List<String> images;
+  final String? updateDate; // Change to String?
+  final String? updateBy; // Change to String?
   final String voucherCodeId;
   final String content;
   final double lon;
@@ -50,7 +48,6 @@ class Refund {
   Refund({
     required this.id,
     required this.medias,
-    this.walletTransaction,
     required this.voucherCode,
     this.reason,
     required this.supplierName,
@@ -60,48 +57,34 @@ class Refund {
     required this.createBy,
     this.updateDate,
     this.updateBy,
-    required this.images,
     required this.voucherCodeId,
     required this.content,
     required this.lon,
     required this.lat,
   });
 
-  // Helper method to parse date
-  DateTime parseDate(String? dateStr) {
-    if (dateStr == null) return DateTime.now();
-    try {
-      return DateTime.parse(dateStr);
-    } catch (e) {
-      return DateTime.now(); // Fallback to current date if parsing fails
-    }
-  }
-
   factory Refund.fromJson(Map<String, dynamic> json) {
     return Refund(
-      id: json['id'] ?? "Unknown", // Handle null values
+      id: json['id'] ?? " ",
       medias: (json['medias'] as List?)
               ?.map((mediaJson) => Media.fromJson(mediaJson))
               .toList() ??
           [], // Default to empty list if null
-      voucherCode: (json['voucherCode'] as List<dynamic>?)
-              ?.map((code) => VoucherCode.fromJson(code))
-              .toList() ??
-          [], // Handle empty or null list
-      walletTransaction: json['walletTransaction'],
+      voucherCode: json['voucherCode'] != null
+          ? [VoucherCode.fromJson(json['voucherCode'])]
+          : [], // If voucherCode exists, map it, otherwise return empty list
       reason: json['reason'], // Nullable
-      supplierName: json['supplierName'] ?? "Unknown",
-      status: json['status'] ?? "Unknown",
-      createDate: (json['createDate']),
-      expireTime: (json['expireTime']),
-      createBy: json['createBy'] ?? "Unknown",
-      updateDate: json['updateDate'],
-      updateBy: json['updateBy'],
-      images: List<String>.from(json['images'] ?? []), // Default to empty list
-      voucherCodeId: json['voucherCodeId'] ?? "Unknown",
-      content: json['content'] ?? "Unknown",
-      lon: json['lon']?.toDouble() ?? 0.0, // Default to 0.0 if null
-      lat: json['lat']?.toDouble() ?? 0.0, // Default to 0.0 if null
+      supplierName: json['supplierName'] ?? " ",
+      status: json['status'] ?? " ",
+      createDate: json['createDate'] ?? " ", // Directly assign string
+      expireTime: json['expireTime'] ?? " ", // Directly assign string
+      createBy: json['createBy'] ?? " ",
+      updateDate: json['updateDate'], // Directly assign string
+      updateBy: json['updateBy'], // Directly assign string
+      voucherCodeId: json['voucherCodeId'] ?? " ",
+      content: json['content'] ?? " ",
+      lon: json['lon']?.toDouble() ?? 0.0,
+      lat: json['lat']?.toDouble() ?? 0.0,
     );
   }
 
@@ -109,17 +92,15 @@ class Refund {
     return <String, dynamic>{
       'id': id,
       'medias': medias.map((media) => media.toJson()).toList(),
-      'walletTransaction': walletTransaction,
       'voucherCode': voucherCode.map((code) => code.toMap()).toList(),
       'reason': reason,
       'supplierName': supplierName,
       'status': status,
-      'createDate': createDate.toIso8601String(),
-      'expireTime': expireTime.toIso8601String(),
+      'createDate': createDate, // Return as string
+      'expireTime': expireTime, // Return as string
       'createBy': createBy,
-      'updateDate': updateDate,
-      'updateBy': updateBy,
-      'images': images,
+      'updateDate': updateDate, // Return as string
+      'updateBy': updateBy, // Return as string
       'voucherCodeId': voucherCodeId,
       'content': content,
       'lon': lon,

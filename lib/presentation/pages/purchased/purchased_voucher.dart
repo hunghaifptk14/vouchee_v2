@@ -1,19 +1,16 @@
-import 'dart:io';
+// ignore_for_file: non_constant_identifier_names
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:gal/gal.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/message.dart';
 import 'package:vouchee/model/my_voucher.dart';
+import 'package:vouchee/model/refund.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/purchased/rating.dart';
-import 'package:vouchee/presentation/pages/purchased/refund.dart';
+import 'package:vouchee/presentation/pages/purchased/show_code.dart';
 import 'package:vouchee/presentation/pages/purchased/show_modal_detail.dart';
 import 'package:vouchee/presentation/widgets/bottomNav/bottom_app_bar.dart';
-import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class PurchedVoucher extends StatefulWidget {
   const PurchedVoucher({super.key});
@@ -26,6 +23,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
   late Future<List<MyVoucher>?> futureMyVoucher;
   late Future<List<MyVoucher>?> futureMyUsedVoucher;
   late Future<List<MyVoucher>?> futureMyPendingVoucher;
+  late Future<List<Refund>?> futureRefundVoucher;
   String newCode = '';
   late Future<Message> message;
 
@@ -37,12 +35,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
     futureMyVoucher = apiServices.fetchMyUnuseVoucher();
     futureMyUsedVoucher = apiServices.fetchMyUsedVoucher();
     futureMyPendingVoucher = apiServices.fetchMyPendingVoucher();
-  }
-
-  void _toggleCode() {
-    setState(() {
-      isShowCode = !isShowCode;
-    });
+    futureRefundVoucher = apiServices.getRefundRequest();
   }
 
   Future<String> getVouchercode(String codeId) async {
@@ -51,6 +44,20 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
       newCode = code;
     });
     return newCode;
+  }
+
+  String _DateTimeformat(String dateString) {
+    try {
+      DateTime parsedDate = DateTime.parse(dateString);
+
+      String formattedDate =
+          DateFormat('HH:mm - dd/MM/yyyy').format(parsedDate);
+
+      return formattedDate;
+    } catch (e) {
+      // Handle parsing errors
+      return "Lỗi thông tin";
+    }
   }
 
   bool compareDate(String targetDateString) {
@@ -77,7 +84,7 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                 child: Text("Chưa sử dụng"),
               ),
               Tab(child: Text("Đã sử dụng")),
-              Tab(child: Text("Đang xử lý")),
+              Tab(child: Text("Hoàn trả")),
             ],
           ),
           title: Text('Voucher của bạn'),
@@ -166,13 +173,13 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                           Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                  builder: (BuildContext
-                                                          context) =>
-                                                      ShowModalDetail(
-                                                        modalId: myvoucher
-                                                            .voucherCodes[0]
-                                                            .modalId,
-                                                      ))); // Uncomment if navigation needed
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          ShowModalDetail(
+                                                            modalId: myvoucher
+                                                                .voucherCodes[0]
+                                                                .modalId,
+                                                          )));
                                         },
                                         child: Text('Xem chi tiết'),
                                       ),
@@ -324,140 +331,16 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                                                                   Expanded(
                                                                                       child: ElevatedButton(
                                                                                     onPressed: () {
-                                                                                      showDialog(
-                                                                                          context: context,
-                                                                                          builder: (BuildContext context) {
-                                                                                            return Center(
-                                                                                              child: Column(
-                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  Center(
-                                                                                                      child: Padding(
-                                                                                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                                                                    child: Container(
-                                                                                                        height: 250,
-                                                                                                        width: 300,
-                                                                                                        decoration: BoxDecoration(color: AppColor.white, borderRadius: BorderRadius.all(Radius.circular(15))),
-                                                                                                        child: Center(
-                                                                                                          child: QrImageView(
-                                                                                                            data: newCode,
-                                                                                                          ),
-                                                                                                        )),
-                                                                                                    //Test
-                                                                                                  )),
-                                                                                                  SizedBox(
-                                                                                                    height: 16,
-                                                                                                  ),
-                                                                                                  Center(
-                                                                                                    child: SizedBox(
-                                                                                                      width: 300,
-                                                                                                      child: Column(
-                                                                                                        children: [
-                                                                                                          Row(
-                                                                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                                            children: [
-                                                                                                              ElevatedButton(
-                                                                                                                  onPressed: () {
-                                                                                                                    Clipboard.setData(ClipboardData(text: newCode));
-                                                                                                                    newCode != '' ? TopSnackbar.show(context, 'Đã copy mã code', backgroundColor: AppColor.success) : TopSnackbar.show(context, 'Đã xảy ra lỗi khi copy mã code', backgroundColor: AppColor.warning);
-                                                                                                                  },
-                                                                                                                  child: Text(
-                                                                                                                    "Copy mã code",
-                                                                                                                    style: TextStyle(color: AppColor.white),
-                                                                                                                  )),
-                                                                                                              SizedBox(
-                                                                                                                width: 8,
-                                                                                                              ),
-                                                                                                              Expanded(
-                                                                                                                child: ElevatedButton(
-                                                                                                                  onPressed: () async {
-                                                                                                                    final path = '${Directory.systemTemp.path}/code-image.jpg';
-                                                                                                                    await Dio().download(
-                                                                                                                      newCode,
-                                                                                                                      // 'https://ibb.co/NjCTCvT',
-                                                                                                                      path,
-                                                                                                                    );
-
-                                                                                                                    await Gal.putImage(path);
-                                                                                                                    TopSnackbar.show(context, 'Đã tải ảnh');
-                                                                                                                  },
-                                                                                                                  child: SizedBox(
-                                                                                                                    child: Row(
-                                                                                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                      children: [
-                                                                                                                        Icon(
-                                                                                                                          Icons.download_outlined,
-                                                                                                                          color: AppColor.white,
-                                                                                                                        ),
-                                                                                                                        SizedBox(
-                                                                                                                          width: 8,
-                                                                                                                        ),
-                                                                                                                        Text(
-                                                                                                                          'Tải ảnh',
-                                                                                                                          style: TextStyle(
-                                                                                                                            color: AppColor.white,
-                                                                                                                            fontSize: 11,
-                                                                                                                          ),
-                                                                                                                        ),
-                                                                                                                      ],
-                                                                                                                    ),
-                                                                                                                  ),
-                                                                                                                ),
-                                                                                                              ),
-                                                                                                            ],
-                                                                                                          ),
-                                                                                                          SizedBox(
-                                                                                                            height: 24,
-                                                                                                          ),
-                                                                                                          ElevatedButton(
-                                                                                                            style: ButtonStyle(
-                                                                                                              backgroundColor: WidgetStateProperty.all(AppColor.warning), // Set the color of the button
-                                                                                                            ),
-                                                                                                            onPressed: () {
-                                                                                                              Navigator.push(
-                                                                                                                  context,
-                                                                                                                  MaterialPageRoute(
-                                                                                                                      builder: (BuildContext context) => RefundPage(
-                                                                                                                            voucherCodeId: voucherCodes.id.toString(),
-                                                                                                                          )));
-                                                                                                            },
-                                                                                                            child: SizedBox(
-                                                                                                              child: Row(
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Icon(
-                                                                                                                    Icons.error_outlined,
-                                                                                                                    color: AppColor.white,
-                                                                                                                  ),
-                                                                                                                  SizedBox(
-                                                                                                                    width: 8,
-                                                                                                                  ),
-                                                                                                                  Text(
-                                                                                                                    'Báo lỗi voucher',
-                                                                                                                    style: TextStyle(
-                                                                                                                      color: AppColor.white,
-                                                                                                                      fontSize: 11,
-                                                                                                                    ),
-                                                                                                                  ),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            ),
-                                                                                                          )
-                                                                                                        ],
-                                                                                                      ),
-                                                                                                    ),
-                                                                                                  )
-                                                                                                ],
-                                                                                              ),
-                                                                                            );
-                                                                                          });
-                                                                                      // apiServices.updateVoucherCodeStatus(voucherCodes.id);
-                                                                                      // updateCode(voucherCodes.status);
+                                                                                      Navigator.push(
+                                                                                          context,
+                                                                                          MaterialPageRoute(
+                                                                                              builder: (BuildContext context) => ShowCodePage(
+                                                                                                    date: voucherCodes.endDate,
+                                                                                                    title: voucherCodes.name,
+                                                                                                    newCode: newCode,
+                                                                                                    voucherCodeId: voucherCodes.id,
+                                                                                                  )));
                                                                                       getVouchercode(voucherCodes.id);
-                                                                                      // apiServices.getVoucherCodeById(voucherCodes.id);
                                                                                     },
                                                                                     child: Text('Lấy mã', style: TextStyle(color: AppColor.white)),
                                                                                   )),
@@ -629,8 +512,8 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
   }
 
   Widget _LoadPendingVoucher() {
-    return FutureBuilder<List<MyVoucher>?>(
-      future: futureMyVoucher,
+    return FutureBuilder<List<Refund>?>(
+      future: futureRefundVoucher,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -639,25 +522,14 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(child: Text('Bạn chưa có voucher nào'));
         } else {
-          List<MyVoucher> myVoucher = snapshot.data!;
-          List<MyVoucher> filteredVouchers = myVoucher.where((voucher) {
-            return voucher.voucherCodes.any((voucherCode) {
-              return voucherCode.status == 'SUSPECTED' ||
-                  voucherCode.status == 'PENDING';
-            });
-          }).toList();
+          List<Refund>? voucher = snapshot.data!;
 
-          // Check if there are any filtered vouchers
-          if (filteredVouchers.isEmpty) {
-            return Center(
-                child: Text('Không có voucher đang chờ hoặc nghi ngờ'));
-          }
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: ListView.builder(
-              itemCount: filteredVouchers.length,
+              itemCount: voucher.length,
               itemBuilder: (context, index) {
-                final myvoucher = filteredVouchers[index];
+                final revoucher = voucher[index];
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -667,52 +539,67 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: ListTile(
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Image.network(
-                                myvoucher.image,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            title: Text(myvoucher.title),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Divider(
-                            height: 1,
-                            thickness: 0.5,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              // ...myvoucher.voucherCodes
-                              //     .map((voucherCodes) => Row(
-                              //           mainAxisAlignment:
-                              //               MainAxisAlignment.spaceBetween,
-                              //           children: [
-                              //             Row(
-                              //               children: [
-                              //                 Text(
-                              //                   'Hết hạn:',
-                              //                   style: TextStyle(
-                              //                       color: AppColor.lightGrey,
-                              //                       fontSize: 12),
-                              //                 ),
-                              //                 Text(' ${voucherCodes.endDate}'),
-                              //               ],
-                              //             ),
-                              //           ],
-                              //         )),
-                              Text('Voucher của bạn đang được xử lí.')
-                            ],
-                          ),
-                        ),
+                        ...revoucher.voucherCode.map((voucherCode) => Column(
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  child: ListTile(
+                                      leading: ClipRRect(
+                                        borderRadius: BorderRadius.circular(7),
+                                        child: SizedBox(
+                                          width: 100,
+                                          child: Image.network(
+                                            voucherCode.image.toString(),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      title: Text(voucherCode.name),
+                                      subtitle: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Ngày tạo:',
+                                              style: TextStyle(
+                                                  color: AppColor.lightGrey,
+                                                  fontSize: 11)),
+                                          Text(_DateTimeformat(
+                                              revoucher.createDate.toString())),
+                                        ],
+                                      )),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Divider(
+                                    height: 1,
+                                    thickness: 0.5,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    children: [
+                                      revoucher.status == 'PENDING'
+                                          ? Text(
+                                              'Voucher của bạn đang được xử lí.',
+                                              style: TextStyle(
+                                                  color: AppColor.warning,
+                                                  fontWeight: FontWeight.w600),
+                                            )
+                                          : Text(
+                                              'Voucher của bạn đã được xử lí.',
+                                              style: TextStyle(
+                                                  color: AppColor.success,
+                                                  fontWeight: FontWeight.w600))
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ))
                       ],
                     ),
                   ),

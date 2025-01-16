@@ -16,6 +16,7 @@ import 'package:vouchee/model/notification.dart';
 import 'package:vouchee/model/order.dart';
 import 'package:vouchee/model/promotion.dart';
 import 'package:vouchee/model/rating.dart';
+import 'package:vouchee/model/refund.dart';
 import 'package:vouchee/model/transactions.dart';
 import 'package:vouchee/model/user.dart';
 import 'package:vouchee/model/voucher.dart';
@@ -115,8 +116,7 @@ class ApiServices {
         },
       );
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        print(jsonData);
+        final jsonData = json.decode(response.body)['results'];
         return Modal.fromJson(jsonData);
       } else {
         throw Exception('Không tải được sản phẩm');
@@ -179,12 +179,10 @@ class ApiServices {
       // final jsonData = jsonDecode(response.body);
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        // log(response.body);
         List<dynamic> results = jsonData['results'];
 
         return results.map((modal) => Modal.fromJson(modal)).toList();
       } else {
-        print('Unexpected JSON structure');
         return [];
       }
     } catch (e) {
@@ -220,7 +218,6 @@ class ApiServices {
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       List<dynamic> results = jsonData['results'];
-      // return jsonData.map((json) => Category.fromJson(json)).toList();
       return results.map((category) => Category.fromJson(category)).toList();
     } else {
       throw Exception('Không tải category');
@@ -236,10 +233,7 @@ class ApiServices {
       print('Fetching vouchers from: $apiUrl?lon=$lon&lat=$lat');
 
       if (response.statusCode == 200) {
-        // List<dynamic> results = jsonData['results'];
-        // return results.map((voucher) => Voucher.fromJson(voucher)).toList();
         final List<dynamic> jsonData = json.decode(response.body)['results'];
-        print(jsonData);
         return jsonData.map((json) => NearVoucher.fromJson(json)).toList();
       } else {
         throw Exception('Không tải được sản phẩm');
@@ -507,11 +501,9 @@ class ApiServices {
       if (response.statusCode == 200) {
         // Successful response
         final jsonData = json.decode(response.body);
-        print('Response checkout : $jsonData');
 
         return Checkout.fromJson(jsonData);
       } else {
-        // Handle failure
         print("Failed to checkout: ${response.body}");
         return null;
       }
@@ -535,7 +527,6 @@ class ApiServices {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         List<dynamic> results = jsonData['results'];
-        print(jsonData);
         return results.map((order) => Order.fromJson(order)).toList();
       } else {
         throw Exception("Failed to fetch order data: ${response.reasonPhrase}");
@@ -558,7 +549,6 @@ class ApiServices {
       final response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
-        // Decode the response body
         final jsonData = json.decode(response.body);
 
         return Order.fromJson(jsonData);
@@ -1075,32 +1065,44 @@ class ApiServices {
       throw Exception("Failed to mark notificaiton");
     }
   }
-  // Future<List<Refund>> getRefundRequest() async {
-  //   final url = Uri.parse(
-  //       'https://api.vouchee.shop/api/v1/refundRequest/get_buyer_refund_request?pageSize=99');
 
-  //   try {
-  //     final headers = {
-  //       'Content-Type': 'application/json',
-  //       'Authorization': 'Bearer $auth',
-  //     };
+  Future<List<Refund>> getRefundRequest() async {
+    final url = Uri.parse(
+        'https://api.vouchee.shop/api/v1/refundRequest/get_buyer_refund_request?pageSize=99');
 
-  //     final response = await http.get(url, headers: headers);
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $auth',
+      };
 
-  //     if (response.statusCode == 200) {
-  //       // Decode the response body
-  //       List<dynamic> jsonData = json.decode(response.body)['results'];
+      final response = await http.get(url, headers: headers);
 
-  //       print(jsonData);
-  //       return jsonData.map((refund) => Refund.fromJson(refund)).toList();
-  //     } else {
-  //       throw Exception(
-  //           "Failed to fetch refund data: ${response.reasonPhrase}");
-  //     }
-  //   } catch (e) {
-  //     throw Exception("Error fetching refunds data: $e");
-  //   }
-  // }
+      if (response.statusCode == 200) {
+        // Decode the response body as a map
+        var jsonData = json.decode(response.body);
+
+        // Check if the 'results' key exists and contains a list
+        if (jsonData is Map<String, dynamic> &&
+            jsonData.containsKey('results')) {
+          List<dynamic> refundList =
+              jsonData['results']; // Extract the 'results' list
+
+          // Map the list to Refund objects
+          return refundList.map((refund) => Refund.fromJson(refund)).toList();
+        } else {
+          // Handle the case where 'results' key is missing or not a list
+          throw Exception(
+              "API response doesn't contain 'results' key or it's not a list.");
+        }
+      } else {
+        throw Exception(
+            "Failed to fetch refund data: ${response.reasonPhrase}");
+      }
+    } catch (e) {
+      throw Exception("Error fetching refunds data: $e");
+    }
+  }
 
   Future<List<BuyerWalletTransaction>> fetchBuyerTransaction() async {
     final url = Uri.parse(
@@ -1147,10 +1149,11 @@ class ApiServices {
         'https://api.vouchee.shop/api/v1/refundRequest/create_refund_request';
     // Convert images to Base64
     List<String> base64Images = await _encodeImagesToBase64(imagePaths);
-
+    print(
+        'path: $base64Images Id: $voucherCodeId content: $content lat:$latitude lon:$longitude');
     // Prepare request body
     final requestBody = {
-      "images": base64Images,
+      "images": 'base64Images',
       "voucherCodeId": voucherCodeId,
       "content": content,
       "lon": longitude,
@@ -1163,7 +1166,7 @@ class ApiServices {
         Uri.parse(apiUrl),
         headers: {
           'Authorization': 'Bearer $auth',
-          "Content-Type": "application/json",
+          "Content-Type": "application/json-patch+json",
         },
         body: jsonEncode(requestBody),
       );
@@ -1171,10 +1174,13 @@ class ApiServices {
       if (response.statusCode == 200) {
         print('Data successfully sent');
         return true;
+        // ignore: curly_braces_in_flow_control_structures
       } else {
-        print('Failed to send data: ${response.statusCode}');
-        return false;
+        (e) {
+          throw ('$e');
+        };
       }
+      return false;
     } catch (e) {
       print('Error sending data: $e');
       return false;

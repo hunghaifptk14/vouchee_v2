@@ -69,43 +69,63 @@ class _NotificationPageState extends State<NotificationPage> {
               // Safely access the message list and its length
               List<NotificationReceiver> messages = snapshot.data!;
 
-              return ListView.builder(
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  NotificationReceiver message =
-                      messages.reversed.toList()[index];
-                  return GestureDetector(
-                    onTap: () {
-                      if (message.seen == false) {
-                        handleMarkNotification(message.id, message.seen);
-                      } else {
-                        null;
-                      }
-                      print(message.seen);
-                    },
-                    child: ListTile(
-                      titleAlignment: ListTileTitleAlignment.top,
-                      leading: message.seen == true
-                          ? Icon(Icons.notifications, color: AppColor.lightGrey)
-                          : Icon(Icons.notifications, color: AppColor.primary),
-                      title: Text(
-                        message.title,
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      subtitle: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _DateTimeformat(message.createDate.toString()),
-                            style: TextStyle(fontSize: 12),
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ListView.builder(
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    NotificationReceiver message =
+                        messages.reversed.toList()[index];
+                    return GestureDetector(
+                      onTap: () {
+                        if (message.seen == false) {
+                          handleMarkNotification(message.id, message.seen);
+                        } else {
+                          null;
+                        }
+                        print(message.seen);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: message.seen == true
+                                ? null
+                                : AppColor.lightBlue,
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          Text(message.body),
-                        ],
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: ListTile(
+                              titleAlignment: ListTileTitleAlignment.top,
+                              leading: message.seen == true
+                                  ? Icon(Icons.notifications,
+                                      color: AppColor.lightGrey)
+                                  : Icon(Icons.notifications,
+                                      color: AppColor.primary),
+                              title: Text(
+                                message.title,
+                                style: TextStyle(fontWeight: FontWeight.w500),
+                              ),
+                              subtitle: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _DateTimeformat(
+                                        message.createDate.toString()),
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(message.body),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               );
             }
           },

@@ -822,38 +822,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
         });
   }
 
-  // Helper method to build each row in the pricing summary
-  Widget _buildPromotionRow(String label, String? content) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: AppColor.black,
-              fontSize: 11,
-            ),
-          ),
-          content == null
-              ? Text(
-                  content.toString(),
-                  style: TextStyle(
-                    color: AppColor.black,
-                    fontSize: 11,
-                  ),
-                )
-              : Text(
-                  'Chưa có khuyến mãi',
-                  style: TextStyle(color: AppColor.lightGrey, fontSize: 11),
-                )
-        ],
-      ),
-    );
-  }
-
   Widget _buildNumberRow(String label, String content) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
