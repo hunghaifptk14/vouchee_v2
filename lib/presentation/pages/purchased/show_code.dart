@@ -48,10 +48,12 @@ class _ShowCodePageState extends State<ShowCodePage> {
                   children: [
                     Text(
                       widget.title,
+                      textAlign: TextAlign.center,
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                     Text('HSD: ${widget.date}'),
+                    const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Container(
@@ -74,7 +76,7 @@ class _ShowCodePageState extends State<ShowCodePage> {
                       width: 300,
                       height: 80,
                       child: BarcodeWidget(
-                        barcode: Barcode.codabar(), // Barcode type and settings
+                        barcode: Barcode.code128(), // Barcode type and settings
                         data: widget.newCode, // Content
                         width: 300,
                         height: 80,

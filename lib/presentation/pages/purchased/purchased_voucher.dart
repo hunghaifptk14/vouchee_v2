@@ -458,44 +458,55 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
                             children: [
-                              ...myvoucher.voucherCodes.map((voucherCodes) =>
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      // Row(
-                                      //   children: [
-                                      //     Text(
-                                      //       'Hết hạn:',
-                                      //       style: TextStyle(
-                                      //           color: AppColor.lightGrey,
-                                      //           fontSize: 12),
-                                      //     ),
-                                      //     Text(' ${voucherCodes.endDate}'),
-                                      //   ],
-                                      // ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder:
-                                                      (BuildContext context) =>
-                                                          RatingVoucherPage(
-                                                              orderId:
-                                                                  voucherCodes
-                                                                      .orderId,
-                                                              modalId: myvoucher
-                                                                  .id)));
-                                        },
-                                        child: Text(
-                                          'Đánh giá voucher',
-                                          style:
-                                              TextStyle(color: AppColor.white),
-                                        ),
-                                      ),
-                                    ],
-                                  )),
+                              ...myvoucher.voucherCodes
+                                  .map((voucherCodes) => Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          // Row(
+                                          //   children: [
+                                          //     Text(
+                                          //       'Hết hạn:',
+                                          //       style: TextStyle(
+                                          //           color: AppColor.lightGrey,
+                                          //           fontSize: 12),
+                                          //     ),
+                                          //     Text(' ${voucherCodes.endDate}'),
+                                          //   ],
+                                          // ),
+                                          myvoucher.isRating != "Đã Rating"
+                                              ? ElevatedButton(
+                                                  onPressed: () {
+                                                    print(myvoucher.isRating);
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (BuildContext
+                                                                    context) =>
+                                                                RatingVoucherPage(
+                                                                    orderId:
+                                                                        voucherCodes
+                                                                            .orderId,
+                                                                    modalId:
+                                                                        myvoucher
+                                                                            .id)));
+                                                  },
+                                                  child: Text(
+                                                    'Đánh giá voucher',
+                                                    style: TextStyle(
+                                                        color: AppColor.white),
+                                                  ),
+                                                )
+                                              : ElevatedButton(
+                                                  onPressed: null,
+                                                  child: Text(
+                                                    'Đã đánh giá voucher',
+                                                    style: TextStyle(
+                                                        color: AppColor.white),
+                                                  ),
+                                                ),
+                                        ],
+                                      )),
                             ],
                           ),
                         ),
@@ -555,7 +566,24 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                           ),
                                         ),
                                       ),
-                                      title: Text(voucherCode.name),
+                                      title: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(voucherCode.name,
+                                              style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500)),
+                                          Text(
+                                            voucherCode.modalname!,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                       subtitle: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
@@ -566,8 +594,11 @@ class _PurchedVoucherState extends State<PurchedVoucher> {
                                               style: TextStyle(
                                                   color: AppColor.lightGrey,
                                                   fontSize: 11)),
-                                          Text(_DateTimeformat(
-                                              revoucher.createDate.toString())),
+                                          Text(
+                                            _DateTimeformat(revoucher.createDate
+                                                .toString()),
+                                            style: TextStyle(fontSize: 11),
+                                          ),
                                         ],
                                       )),
                                 ),

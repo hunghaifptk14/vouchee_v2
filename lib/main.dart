@@ -9,6 +9,7 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Message received: ${message.notification?.title}');
+    // TopSnackbar.show(context, message);
   });
   runApp(Vouchee());
 }

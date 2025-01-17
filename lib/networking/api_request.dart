@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:vouchee/model/cart.dart';
 import 'package:vouchee/model/category.dart';
 import 'package:vouchee/model/checkout.dart';
@@ -721,7 +722,7 @@ class ApiServices {
       if (response.statusCode == 200) {
         // Decode the response body
         final List<dynamic> jsonData = json.decode(response.body);
-        print(jsonData);
+        print('promotion api:$jsonData');
         return jsonData.map((promo) => Promotion.fromJson(promo)).toList();
       } else {
         throw Exception(
@@ -1087,7 +1088,7 @@ class ApiServices {
             jsonData.containsKey('results')) {
           List<dynamic> refundList =
               jsonData['results']; // Extract the 'results' list
-
+          print('refund: ${jsonData}');
           // Map the list to Refund objects
           return refundList.map((refund) => Refund.fromJson(refund)).toList();
         } else {
@@ -1132,55 +1133,45 @@ class ApiServices {
   }
 
   Future<bool> refundVoucherCode(
-    List<String> imagePaths,
     String voucherCodeId,
     String content,
     num? latitude,
     num? longitude,
   ) async {
-    if (latitude == null ||
-        longitude == null ||
-        imagePaths.isEmpty ||
-        content.isEmpty) {
+    if (latitude == null || longitude == null || content.isEmpty) {
       print('Missing required data');
       return false;
     }
+
     final apiUrl =
         'https://api.vouchee.shop/api/v1/refundRequest/create_refund_request';
-    // Convert images to Base64
-    List<String> base64Images = await _encodeImagesToBase64(imagePaths);
-    print(
-        'path: $base64Images Id: $voucherCodeId content: $content lat:$latitude lon:$longitude');
-    // Prepare request body
-    final requestBody = {
-      "images": 'base64Images',
-      "voucherCodeId": voucherCodeId,
-      "content": content,
-      "lon": longitude,
-      "lat": latitude,
-    };
 
     try {
-      // Make POST request
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $auth',
-          "Content-Type": "application/json-patch+json",
-        },
-        body: jsonEncode(requestBody),
-      );
+      // Prepare multipart request
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl))
+        ..headers['Authorization'] =
+            'Bearer $auth' // Add authorization if required
+        ..headers['Content-Type'] = 'multipart/form-data';
 
+      // Attach the images to the request
+
+      // Attach other fields to the request
+      request.fields['voucherCodeId'] = voucherCodeId;
+      request.fields['content'] = content;
+      request.fields['lat'] = latitude.toString();
+      request.fields['lon'] = longitude.toString();
+
+      // Make the request
+      final response = await request.send();
+
+      // Check the response status
       if (response.statusCode == 200) {
         print('Data successfully sent');
         return true;
-        // ignore: curly_braces_in_flow_control_structures
       } else {
-        (e) {
-          throw ('$e');
-        };
+        print('Failed to send data: ${response.statusCode}');
+        return false;
       }
-      return false;
     } catch (e) {
       print('Error sending data: $e');
       return false;

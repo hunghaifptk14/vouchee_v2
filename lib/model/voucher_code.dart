@@ -11,6 +11,7 @@ class VoucherCode {
   final String? newCode;
   final String startDate;
   final String endDate;
+  final String? modalname;
 
   VoucherCode({
     required this.id,
@@ -24,6 +25,7 @@ class VoucherCode {
     this.newCode,
     required this.startDate,
     required this.endDate,
+    required this.modalname,
   });
 
   // Factory constructor to create a VoucherCode from JSON
@@ -31,6 +33,7 @@ class VoucherCode {
     return VoucherCode(
       id: json['id'],
       name: json['name'],
+      modalname: json['modalname'],
       modalId: json['modalId'],
       orderId: json['orderId'],
       buyerId: json['buyerId'],
@@ -48,6 +51,7 @@ class VoucherCode {
     return {
       'id': id,
       'name': name,
+      'modalname': modalname,
       'modalId': modalId,
       'orderId': orderId,
       'buyerId': buyerId,
@@ -63,6 +67,7 @@ class VoucherCode {
     return {
       'id': id,
       'name': name,
+      'modalname': modalname,
       'modalId': modalId,
       'orderId': orderId,
       'buyerId': buyerId,

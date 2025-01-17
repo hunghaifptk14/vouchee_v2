@@ -165,6 +165,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       });
       TopSnackbar.show(context, 'Tạo đơn hàng thành công',
           backgroundColor: AppColor.success);
+      // _orderStatusRequest();
     }
     print(getOrderIDString);
     print(widget.selectedItems);

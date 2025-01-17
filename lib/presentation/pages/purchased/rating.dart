@@ -50,7 +50,7 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
     bool success = await apiServices.updateRating(rating);
 
     if (success) {
-      TopSnackbar.show(context, 'Tạo rating thành công',
+      TopSnackbar.show(context, 'Cảm ơn bạn đã đánh giá',
           backgroundColor: AppColor.success);
       setState(() {
         isSuccess = true;
@@ -131,7 +131,10 @@ class _RatingVoucherPageState extends State<RatingVoucherPage> {
                                   const PurchedVoucher()))
                       : null;
                 },
-                child: Text("Hoàn tất"),
+                child: Text(
+                  "Hoàn tất",
+                  style: TextStyle(color: AppColor.white),
+                ),
               ),
             ],
           ),
