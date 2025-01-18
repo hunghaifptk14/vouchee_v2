@@ -11,6 +11,7 @@ import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/checkout.dart';
 import 'package:vouchee/model/item_brief.dart';
 import 'package:vouchee/model/user.dart';
+import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/homePage/home_page.dart';
 import 'package:vouchee/presentation/pages/wallet/wallet.dart';
@@ -169,6 +170,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
     print(getOrderIDString);
     print(widget.selectedItems);
+    print(getUseBalance);
+    print(getUseVpoint);
   }
 
   void handleUseBalance(int useBalance) {
@@ -388,14 +391,44 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                                                 TextButton(
                                                                   onPressed:
                                                                       () {
-                                                                    setState(
-                                                                        () {
-                                                                      getUseVpoint =
-                                                                          int.tryParse(
-                                                                              vPointController.text);
-                                                                    });
-                                                                    Navigator.pop(
-                                                                        context);
+                                                                    // Parse the entered V-point
+                                                                    int?
+                                                                        enteredVPoint =
+                                                                        int.tryParse(
+                                                                            vPointController.text);
+
+                                                                    // Check if the value is valid and not greater than 100
+                                                                    if (enteredVPoint ==
+                                                                            null ||
+                                                                        enteredVPoint <=
+                                                                            0) {
+                                                                      TopSnackbar
+                                                                          .show(
+                                                                        context,
+                                                                        'Vui lòng nhập số V-point hợp lệ.',
+                                                                        backgroundColor:
+                                                                            AppColor.warning,
+                                                                      );
+                                                                    } else if (enteredVPoint >
+                                                                        (check.totalPrice *
+                                                                            50 /
+                                                                            100)) {
+                                                                      TopSnackbar
+                                                                          .show(
+                                                                        context,
+                                                                        'Số V-point không được vượt quá 50% tổng đơn hàng.',
+                                                                        backgroundColor:
+                                                                            AppColor.warning,
+                                                                      );
+                                                                    } else {
+                                                                      setState(
+                                                                          () {
+                                                                        getUseVpoint =
+                                                                            enteredVPoint;
+                                                                      });
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    }
                                                                   },
                                                                   child: Text(
                                                                       "Hoàn tất"),
@@ -757,7 +790,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                               );
                                             } else {
                                               handleUseBalance(
-                                                  check.balance.toInt());
+                                                  check.totalPrice.toInt());
                                               _orderRequest();
                                             }
                                           }

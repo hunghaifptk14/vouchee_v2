@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:vouchee/core/configs/theme/app_color.dart';
+import 'package:vouchee/model/address.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/voucher/modal_list.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class VoucherDetailPage extends StatefulWidget {
   final Voucher voucher;
@@ -17,11 +21,13 @@ class VoucherDetailPage extends StatefulWidget {
 class _VoucherDetailPageState extends State<VoucherDetailPage> {
   late Future<Voucher> futureVoucher;
   final ApiServices apiService = ApiServices();
+  late Future<List<Address>> futureVouchersAddress;
 
   @override
   void initState() {
     super.initState();
     futureVoucher = apiService.fetchVoucherById(widget.voucher.id);
+    futureVouchersAddress = apiService.fetchVoucherAddress(widget.voucher.id);
   }
 
   @override
@@ -116,6 +122,14 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                             Html(
                               data: voucher.description,
                             ),
+                            SizedBox(height: 16),
+                            Text('Địa chỉ áp dụng: ',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500)),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            SizedBox(height: 300, child: _getVoucherAddress()),
                           ],
                         ),
                       ),
@@ -124,5 +138,77 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                 );
               }
             }));
+  }
+
+  Widget _getVoucherAddress() {
+    return FutureBuilder<List<Address>>(
+        future: futureVouchersAddress,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            List<Address> address = snapshot.data!;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              child: ListView.builder(
+                  itemCount: address.length,
+                  itemBuilder: (context, index) {
+                    final voucherAddress = address[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(7.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 1,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.circle,
+                                size: 6,
+                                color: AppColor.lightGrey,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    // Copy the text to clipboard
+                                    Clipboard.setData(ClipboardData(
+                                        text: voucherAddress.name));
+
+                                    TopSnackbar.show(context, 'Đã copy địa chỉ',
+                                        backgroundColor: AppColor.success);
+                                  },
+                                  child: Text(
+                                    voucherAddress.name,
+                                    overflow: TextOverflow
+                                        .ellipsis, // Ensure text doesn't overflow
+                                    maxLines: 1, // Limit to 1 line
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+            );
+          }
+        });
   }
 }

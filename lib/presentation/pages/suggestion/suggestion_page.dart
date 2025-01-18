@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
 import 'package:vouchee/model/near_voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/voucher/voucher_detail.dart';
 import 'package:vouchee/presentation/widgets/bottomNav/bottom_app_bar.dart';
+import 'package:vouchee/presentation/widgets/snack_bar.dart';
 
 class SuggestionPage extends StatefulWidget {
   const SuggestionPage({super.key});
@@ -201,11 +204,23 @@ class _SuggestionPageState extends State<SuggestionPage> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                address.name,
-                                                style: TextStyle(
-                                                    overflow:
-                                                        TextOverflow.visible),
+                                              GestureDetector(
+                                                onTap: () {
+                                                  Clipboard.setData(
+                                                      ClipboardData(
+                                                          text: address.name));
+
+                                                  TopSnackbar.show(context,
+                                                      'Đã copy địa chỉ',
+                                                      backgroundColor:
+                                                          AppColor.success);
+                                                },
+                                                child: Text(
+                                                  address.name,
+                                                  style: TextStyle(
+                                                      overflow:
+                                                          TextOverflow.visible),
+                                                ),
                                               ),
                                               SizedBox(
                                                 height: 4,

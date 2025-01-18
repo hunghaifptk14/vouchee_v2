@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:vouchee/model/address.dart';
 import 'package:vouchee/model/cart.dart';
 import 'package:vouchee/model/category.dart';
 import 'package:vouchee/model/checkout.dart';
@@ -99,6 +100,26 @@ class ApiServices {
         return Voucher.fromJson(jsonData);
       } else {
         throw Exception('Failed to load voucher');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to load voucher: $e');
+    }
+  }
+
+  Future<List<Address>> fetchVoucherAddress(String voucherId) async {
+    final String apiUrl =
+        'https://api.vouchee.shop/api/v1/voucher/get_voucher/';
+
+    try {
+      final response = await http.get(Uri.parse('$apiUrl$voucherId'));
+
+      if (response.statusCode == 200) {
+        List<dynamic> jsonData =
+            json.decode(response.body)['results']['addresses'];
+        return jsonData.map((address) => Address.fromJson(address)).toList();
+      } else {
+        throw Exception('Failed to load address');
       }
     } catch (e) {
       print('Error: $e');
@@ -1088,7 +1109,7 @@ class ApiServices {
             jsonData.containsKey('results')) {
           List<dynamic> refundList =
               jsonData['results']; // Extract the 'results' list
-          print('refund: ${jsonData}');
+          print('refund: $jsonData');
           // Map the list to Refund objects
           return refundList.map((refund) => Refund.fromJson(refund)).toList();
         } else {

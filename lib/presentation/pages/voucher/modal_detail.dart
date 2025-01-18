@@ -195,7 +195,6 @@ class _ModalsDetailPageState extends State<ModalsDetailPage> {
                               : OutlinedButton(
                                   onPressed: () {
                                     _addToCart(widget.modal.id);
-                                    print(widget.modal.stock.toInt());
                                   },
                                   style: OutlinedButton.styleFrom(
                                       shape: RoundedRectangleBorder(

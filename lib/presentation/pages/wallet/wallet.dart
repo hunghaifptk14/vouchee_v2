@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
@@ -361,8 +362,14 @@ class _WalletPageState extends State<WalletPage> {
           title: Text('Nhập số tiền rút'),
           content: TextField(
             controller: amountController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(),
+            keyboardType: TextInputType.numberWithOptions(
+                decimal: true), // Allows numbers and decimal points
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+            ],
+            decoration: InputDecoration(
+                hintText: 'Số tiền',
+                hintStyle: TextStyle(color: AppColor.lightGrey)),
           ),
           actions: <Widget>[
             TextButton(
@@ -375,8 +382,23 @@ class _WalletPageState extends State<WalletPage> {
               child: Text('Rút tiền'),
               onPressed: () {
                 String amount = amountController.text;
-                _withDrawRequest(amount);
-                Navigator.of(context).pop();
+
+                // Check if the amount is valid (not empty or 0)
+                if (amount.isEmpty ||
+                    double.tryParse(amount) == null ||
+                    double.parse(amount) <= 0) {
+                  TopSnackbar.show(context, 'Vui lòng nhập số tiền hợp lệ.',
+                      backgroundColor: AppColor.warning);
+                } else if (double.parse(amount) > balance) {
+                  // Check if the amount is greater than the available balance
+                  TopSnackbar.show(context, 'Số tiền vượt quá số dư hiện tại.',
+                      backgroundColor: AppColor.warning);
+                } else {
+                  _withDrawRequest(amount);
+                  TopSnackbar.show(context, 'Tạo yêu cầu rút tiền thành công',
+                      backgroundColor: AppColor.success);
+                  Navigator.of(context).pop();
+                }
               },
             ),
           ],
@@ -429,8 +451,26 @@ class _WalletPageState extends State<WalletPage> {
                             style: TextStyle(
                                 fontWeight: FontWeight.w500, fontSize: 14),
                           ),
-                          subtitle: Text(_DateTimeformat(
-                              transaction.createDate.toString())),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(_DateTimeformat(
+                                  transaction.createDate.toString())),
+                              Row(
+                                children: [
+                                  Text('Trạng thái: ',
+                                      style: TextStyle(fontSize: 9)),
+                                  SizedBox(
+                                    width: 4,
+                                  ),
+                                  Text(
+                                    transaction.status,
+                                    style: TextStyle(fontSize: 9),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
                           trailing: Text(
                             _currencyFormat(transaction.amount),
                             style: TextStyle(

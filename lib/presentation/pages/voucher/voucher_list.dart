@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vouchee/core/configs/assets/app_image.dart';
 import 'package:vouchee/core/configs/theme/app_color.dart';
+import 'package:vouchee/model/address.dart';
 import 'package:vouchee/model/voucher.dart';
 import 'package:vouchee/networking/api_request.dart';
 import 'package:vouchee/presentation/pages/voucher/voucher_detail.dart';

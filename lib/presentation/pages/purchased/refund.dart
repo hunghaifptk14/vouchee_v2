@@ -23,9 +23,10 @@ class RefundPage extends StatefulWidget {
 class _RefundPageState extends State<RefundPage> {
   num? latitude;
   num? longitude;
-  List<XFile> _selectedFiles = []; // Store XFile objects for the images
+  final List<XFile> _selectedFiles = []; // Store XFile objects for the images
   String? content;
   bool isSuccess = false;
+  bool _isLoading = false;
   final _picker = ImagePicker();
   final ApiServices _apiService = ApiServices(); // Initialize the ApiService
 
@@ -54,8 +55,9 @@ class _RefundPageState extends State<RefundPage> {
         showPermissionDeniedDialog(context);
         throw Exception("Location permission permanently denied.");
       }
-
+      // showPermissionDeniedDialog(context);
       // Get current position and store latitude and longitude in respective variables
+
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
@@ -80,19 +82,19 @@ class _RefundPageState extends State<RefundPage> {
       builder: (context) {
         return AlertDialog(
           title: Text('Cấp quyền vị trí'),
-          content: Text(
-              'Ứng dụng cần quyền truy cập vị trí để hiển thị các voucher gần bạn. Vui lòng bật quyền trong phần cài đặt.'),
+          content:
+              Text('Ứng dụng cần cập nhật vị trí của bạn để hỗ trợ hoàn tiền'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Hủy'),
-            ),
+            // TextButton(
+            //   onPressed: () => Navigator.of(context).pop(),
+            //   child: Text('Hủy'),
+            // ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Geolocator.openAppSettings();
+                // Geolocator.openAppSettings();
               },
-              child: Text('Đi đến cài đặt'),
+              child: Text('Cho phép'),
             ),
           ],
         );
@@ -104,11 +106,9 @@ class _RefundPageState extends State<RefundPage> {
   Future<void> _pickImage() async {
     final pickedFiles =
         await _picker.pickMultiImage(); // Pick multiple images if needed
-    if (pickedFiles != null) {
-      setState(() {
-        _selectedFiles.addAll(pickedFiles); // Add all picked files to the list
-      });
-    }
+    setState(() {
+      _selectedFiles.addAll(pickedFiles); // Add all picked files to the list
+    });
   }
 
   // Method to delete image
@@ -120,6 +120,9 @@ class _RefundPageState extends State<RefundPage> {
 
   // Method to send data to API
   Future<void> _sendDataToApi() async {
+    setState(() {
+      _isLoading = true; // Set loading state to true when starting API call
+    });
     // if (_selectedFiles.isEmpty) {
     //   TopSnackbar.show(context, 'Vui lòng chọn ít nhất một hình ảnh',
     //       backgroundColor: AppColor.warning);
@@ -137,12 +140,17 @@ class _RefundPageState extends State<RefundPage> {
     if (success) {
       TopSnackbar.show(context, 'Gửi yêu cầu thành công',
           backgroundColor: AppColor.success);
+      Navigator.pop(context);
       setState(() {
         isSuccess = true;
+        _isLoading = false;
       });
     } else {
       TopSnackbar.show(context, 'Gửi yêu cầu thất bại',
           backgroundColor: AppColor.warning);
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -244,11 +252,18 @@ class _RefundPageState extends State<RefundPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _sendDataToApi,
-                  child: Text(
-                    'Gửi',
-                    style: TextStyle(color: AppColor.white, fontSize: 16),
-                  ),
+                  onPressed: _isLoading
+                      ? null
+                      : _sendDataToApi, // Disable button if loading
+                  child: _isLoading
+                      ? CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white), // Spinner color
+                        )
+                      : Text(
+                          'Gửi',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
                 ),
               ),
             ],
